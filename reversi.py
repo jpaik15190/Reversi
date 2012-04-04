@@ -2,6 +2,48 @@
 Paul Terwilliger, Jay Paik, Kirsten Lau"""
 import re
 
+"""A few things that the rules still do not do: 
+a)tell you when the game is over
+b)end the game
+c)force a player to pass if they cannot move
+d)allow a player to resign
+e)run forever until a person wins, loses, or resigns.  
+--Note: this game will not allow the player to voluntarily "pass"
+
+Ending the game happens when:
+a)both players cannot move
+b)the board is full (same as "both players cannot move", trivial case)
+c)one player resigns
+
+Ending the game entails:
+a)telling you who wins
+b)asking for a rematch with sides switched Ex: black moves first if white
+    moved first last game and vice-versa
+c)resetting the board using the new_game() function
+
+---BUG FIXED---
+(Jay) Question:
+Where would you like to move? Choose a two digit number 00-77: 21
+[(2, 2), (3, 2)] <---- These are the flipped pebbles
+21)0  1  2  3  4  5  6  7 
+0 [0, 0, 0, 0, 0, 0, 0, 0]
+1 [0, 0, 0, 0, 0, 0, 0, 0]
+2 [0, 1, 1, 1, 0, 0, 0, 0]
+3 [0, 0, 1, 2, 2, 0, 0, 0]
+4 [0, 2, 1, 1, 2, 0, 0, 0]
+5 [2, 1, 1, 1, 0, 2, 0, 0]
+6 [0, 0, 0, 0, 0, 0, 0, 0]
+7 [0, 0, 0, 0, 0, 0, 0, 0]
+--------------------------
+Where would you like to move? Choose a two digit number 00-77: 54
+[] <---- These are the flipped pebbles
+[] <---- These are the flipped pebbles
+Invalid entry, try again
+
+In this case, as Player 2, I cannot move to 54. Is this a bug?
+---BUG FIXED---
+"""
+
 class Reversi(object):
     """This is the Reversi class with the rules of the game"""
     
@@ -9,10 +51,8 @@ class Reversi(object):
         """Create board and other variables"""
         self.board = []
         self.move = '99'
-        self.turn = 0
-        self.angles = []
-        self.coors = {}
-        self.end_pebbles = {}
+        self.turn = 2
+        self.flip = []
         
     def new_game(self):
         """Starts a new game of Reversi"""
@@ -24,8 +64,14 @@ class Reversi(object):
                       [0, 0, 0, 0, 0, 0, 0, 0,],
                       [0, 0, 0, 0, 0, 0, 0, 0,],
                       [0, 0, 0, 0, 0, 0, 0, 0,]]
-        self.turn = 1
+        self.turn = ((self.turn % 2) + 1)
         self.print_board()
+
+    def end_game(self):
+        """Ends a reversi game. Should output who wins and ask for a rematch
+        (with sides switched). If a rematch is decided upon, new_game should
+        be run."""
+        pass
         
     def print_board(self):
         """Prints the board: temporary function for developing code"""
@@ -36,80 +82,170 @@ class Reversi(object):
             col_num += 1
         print "--------------------------"
 
-    def check_pebbles(self):
-        """Checks if any opponent pebbles are around the input pebble
-        Stores the coordinates of opposing pebbles in self.coors"""
+    def flip_pebbles(self):
+        """Checks if any opponent pebbles are around the input pebble and
+        flips the corresponding pebbles.  Returns a list of flipped
+        pebbles.  If the move is illegal, the turn won't happen."""
+        
+        def legal(flip_list):
+            """Input is a list of two-integer tuples which are coordinates,
+            output is a list with the to-be-flipped pebbles remaining."""
+            legl = 0
+            counter = 0
+            for (num, ber) in flip_list:
+                if self.board[num][ber] == ((self.turn % 2) + 1):
+                    counter += 1
+                elif self.board[num][ber] == 0:
+                    counter = 0
+                    break
+                elif self.board[num][ber] == self.turn:
+                    legl = 1
+                    break
+            if legl == 0:
+                counter = 0
+            flip = flip_list[:counter]
+            return flip
 
         # Defined variables:
         coo_y = int(self.move[0])
         coo_x = int(self.move[1])
         turn_f = ((self.turn % 2) + 1)
+        self.flip = []
+        north = []
+        neast = []
+        east = []
+        seast = []
+        south = []
+        swest = []
+        west = []
+        nwest = []
 
-        # Enemy at 12:00
+        # Enemy north
         if bool(re.match('[2-7][0-7]$', self.move)) and (
-                                    self.board[coo_y - 1][coo_x] == turn_f):
-            coors_y = [coo for coo in range(coo_y - 1, -1, -1)]
+                                self.board[coo_y - 1][coo_x] == turn_f):
+            coors_y = [coor for coor in range(coo_y - 1, -1, -1)]
             coors_x = [coo_x for num in range(8)]
-            self.coors[0] = zip(coors_y, coors_x)
-            self.end_pebbles[0] = [self.board[self.coors[0][num][0]][
-                        self.coors[0][num][1]] for num in range(len(self.coors[
-                                                                          0]))]
-        if bool(re.match('[2-7][0-5]$', self.move)): #enemy 1:30,  [1]
-            if self.board[coo_y - 1][coo_x + 1] == turn_f:
-                coors_y = [coo for coo in range(coo_y - 1, -1, -1)]
-                coors_x = [coor for coor in range(coo_x + 1, 8)]
-                self.coors[1] = zip(coors_y, coors_x)
-                self.end_pebbles[1] = [self.board[self.coors[1][num][0]][self.coors[1][num][1]] for
-                                       num in range(len(self.coors[1]))]
-                print self.end_pebbles, self.coors
-        if bool(re.match('[0-7][0-5]$', self.move)): #enemy 3:00,  [2]
-            if self.board[coo_y][coo_x + 1] == turn_f:
-                coors_y = [coo_y for num in range(8)]
-                coors_x = [coor for coor in range(coo_x + 1, 8)]
-                self.coors[2] = zip(coors_y, coors_x)
-                self.end_pebbles[2] = [self.board[self.coors[2][num][0]][self.coors[2][num][1]] for
-                                       num in range(len(self.coors[2]))]
-                print self.end_pebbles, self.coors
-        if bool(re.match('[0-5][0-5]$', self.move)): #enemy 4:30,  [3]
-            if self.board[coo_y + 1][coo_x + 1] == turn_f:
-                pass
-        if bool(re.match('[0-5][0-7]$', self.move)): #enemy 6:00,  [4]
-            if self.board[coo_y + 1][coo_x] == (
-                                                    (self.turn % 2) + 1): self.angles.append(4)
-        if bool(re.match('[0-5][2-7]$', self.move)): #enemy 7:30,  [5]
-            if self.board[coo_y + 1][coo_x - 1] == (
-                                                    (self.turn % 2) + 1): self.angles.append(5)
-        if bool(re.match('[0-7][2-7]$', self.move)): #enemy 9:00,  [6]
-            if self.board[coo_y][coo_x - 1] == (
-                                                    (self.turn % 2) + 1): self.angles.append(6)
-        if bool(re.match('[2-7][2-7]$', self.move)): #enemy 10:30, [7]
-            if self.board[coo_y - 1][coo_x - 1] == (
-                                                    (self.turn % 2) + 1): self.angles.append(7)
+            north = zip(coors_y, coors_x)
+            
+        # Enemy north-east
+        if bool(re.match('[2-7][0-5]$', self.move)) and (
+                            self.board[coo_y - 1][coo_x + 1] == turn_f):
+            coors_y = [coor for coor in range(coo_y - 1, -1, -1)]
+            coors_x = [coor for coor in range(coo_x + 1, 8)]
+            neast = zip(coors_y, coors_x)
+        
+        # Enemy east
+        if bool(re.match('[0-7][0-5]$', self.move)) and (
+                                self.board[coo_y][coo_x + 1] == turn_f):
+            coors_y = [coo_y for num in range(8)]
+            coors_x = [coor for coor in range(coo_x + 1, 8)]
+            east = zip(coors_y, coors_x)
+        
+        # Enemy south-east        
+        if bool(re.match('[0-5][0-5]$', self.move)) and (
+                            self.board[coo_y + 1][coo_x + 1] == turn_f):
+            coors_y = [coor for coor in range(coo_y + 1, 8)]
+            coors_x = [coor for coor in range(coo_x + 1, 8)]
+            seast = zip(coors_y, coors_x)
+            
+        # Enemy south
+        if bool(re.match('[0-5][0-7]$', self.move)) and (
+                                self.board[coo_y + 1][coo_x] == turn_f):
+            coors_y = [coor for coor in range(coo_y + 1, 8)]
+            coors_x = [coo_x for num in range(8)]
+            south = zip(coors_y, coors_x)
+        
+        # Enemy south-west
+        if bool(re.match('[0-5][2-7]$', self.move)) and (
+                            self.board[coo_y + 1][coo_x - 1] == turn_f):
+            coors_y = [coor for coor in range(coo_y + 1, 8)]
+            coors_x = [coor for coor in range(coo_x - 1, -1, -1)]
+            swest = zip(coors_y, coors_x)
+        
+        #Enemy west
+        if bool(re.match('[0-7][2-7]$', self.move)) and (
+                                self.board[coo_y][coo_x - 1] == turn_f):
+            coors_y = [coo_y for num in range(8)]
+            coors_x = [coor for coor in range(coo_x - 1, -1, -1)]
+            west = zip(coors_y, coors_x)
+        
+        # Enemy north-west
+        if bool(re.match('[2-7][2-7]$', self.move)) and (
+                            self.board[coo_y - 1][coo_x - 1] == turn_f):
+            coors_y = [coor for coor in range(coo_y - 1, -1, -1)]
+            coors_x = [coor for coor in range(coo_x - 1, -1, -1)]
+            nwest = zip(coors_y, coors_x)
+        
+        self.flip = (legal(north) + legal(neast) + legal(east)
+                   + legal(seast) + legal(south) + legal(swest)
+                    + legal(west) + legal(nwest))
+        
+        # Flips over the pebbles chosen by flip
+        lgal = 0
+        for (num, ber) in self.flip:
+            lgal += 1
+            self.board[num][ber] = self.turn
+        if 0 < lgal:
+            self.board[int(self.move[0])][int(self.move[1])] = self.turn
+        print self.flip, "<---- Flipped pebbles on p{} turn".format(self.turn)
+        return self.flip
         
     def prompt_move(self):
-        """Receives a move from the user and runs it"""
+        """Receives a move from the user and runs it. Entries are a two-digit
+        string with the y-coordinate first, then the x-coordinate. Both
+        coordinates must be from 0 to 7 inclusive. Ex: valid entries are
+        "00", "77", "45", "12", "70". Ex: invalid entries are: "90", "38", 
+        "81", "031", "1", "a5"
+        
+        
+        99)0  1  2  3  4  5  6  7 
+        0 [0, 0, 0, 0, 0, 0, 0, 0]
+        1 [0, 0, 0, 0, 0, 0, 0, 0]
+        2 [0, 0, 0, 0, 0, 0, 0, 0]
+        3 [0, 0, 0, 1, 2, 0, 0, 0]
+        4 [0, 0, 0, 2, 1, 0, 0, 0]
+        5 [0, 0, 0, 0, 0, 0, 0, 0]
+        6 [0, 0, 0, 0, 0, 0, 0, 0]
+        7 [0, 0, 0, 0, 0, 0, 0, 0]
+        --------------------------
+        
+        --Note: 1 is white, 2 is black, 0 is an empty square
+        """
+        # The prompt for a move
         self.move = '99'
-        while bool(re.match('[0-7][0-7]$', self.move)) == False:
+        while (bool(re.match(r'[0-7][0-7]$', self.move))) == False:
             self.move = raw_input("Where would you like to move? "
                                   "Choose a two digit number 00-77: ")
-            self.check_pebbles()
-            self.end_pebbles = {}
-            self.coors ={}
-            if (bool(re.match('[0-7][0-7]$', self.move)) and (self.board[int(self.move[0])][
-                                                                    int(self.move[1])] == 0)):
-                self.board[int(self.move[0])][int(self.move[1])], self.turn = self.turn, (
-                                    (self.turn % 2) + 1) #append move to board and change turns
-                self.print_board()
-            elif bool(re.match('[0-7][0-7]$', self.move)) == True:
-                print "Invalid move, Player {} already has a piece there.".format(
-                                        self.board[int(self.move[0])][int(self.move[1])])
+            match = (bool(re.match(r'[0-7][0-7]$', self.move)))
+            if (len(self.move) == 2) and match and (self.board[int(
+                                self.move[0])][int(self.move[1])] != 0):
+                print "Invalid: Player {} has a piece there.".format(
+                            self.board[int(self.move[0])][int(self.move[1])])
                 self.move = '99'
+            elif (len(self.move) == 2) and match and (self.board[int(
+                                self.move[0])][int(self.move[1])] == 0):
+                self.flip_pebbles()
+                if bool(self.flip) == True: 
+                    self.print_board() # Print the board
+                    self.turn = ((self.turn % 2) + 1) # Changes turns
+                else:
+                    print "INVALID: no flipped tiles. Try again"
+                    self.move = '99'
             else:
-                print "Invalid entry."
+                print "Invalid entry, try again"
+    
+    def run_reversi(self):
+        """This will run prompt_move() and new_game() and end_game() and 
+        potentially every function. This function should be the one that 
+        combines all of them until the game ends. This function
+        should bring together all the rules into one, so the user can call
+        just this one and this one only.  
+        """
+        pass
 
 
-game = Reversi()
-game.new_game()
-for x in range(1):
-    game.prompt_move()
-print 'Good move.'
+game = Reversi()        #temporary for developing code
+game.new_game()         #temporary for developing code
+for x in range(100):    #temporary for developing code
+    game.prompt_move()  #temporary for developing code
+print 'Good move.'      #temporary for developing code
