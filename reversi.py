@@ -24,8 +24,10 @@ b)asking for a rematch with sides switched Ex: black moves first if white
     moved first last game and vice-versa
 c)resetting the board using the new_game() function
 
-
-
+Bug found: when the series of numbers 53 32 24 63 42 35 is input, 35 doesn't
+flip over all of the pebbles that it should, namely the ones to the west of
+it.  I don't know why it doesn't flip them.  If someone finds it, you are
+amazing. I'll look at it later, thanks!
 """
 
 class Reversi(object):
@@ -64,21 +66,22 @@ class Reversi(object):
         """Checks if any opponent pebbles are around the input pebble and
         stores the coordinates of all opposing flippable pebbles in flip"""
         
-        def legal_move(flip_list):
+        def legal(flip_list):
             """Input is a list of two-integer tuples which are coordinates,
             output is a list with the to-be-flipped pebbles remaining."""
-            legal = 0
+            legl = 0
             counter = 0
             for (num, ber) in flip_list:
+                #print (num, ber)
                 if self.board[num][ber] == ((self.turn % 2) + 1):
                     counter += 1
                 elif self.board[num][ber] == 0:
                     counter = 0
                     break
                 elif self.board[num][ber] == self.turn:
-                    legal = 1
+                    legl = 1
                     break
-            if legal == 0:
+            if legl == 0:
                 counter = 0
             flip = flip_list[:counter]
             return flip
@@ -153,14 +156,14 @@ class Reversi(object):
             coors_x = [coor for coor in range(coo_x - 1, -1, -1)]
             west = zip(coors_y, coors_x)
         
-        self.flip = (legal_move(north) + legal_move(neast) + legal_move(east)
-                   + legal_move(seast) + legal_move(south) + legal_move(swest)
-                    + legal_move(west) + legal_move(nwest))
+        self.flip = (legal(north) + legal(neast) + legal(east)
+                   + legal(seast) + legal(south) + legal(swest)
+                    + legal(west) + legal(nwest))
         
         # Flips over the pebbles chosen by flip
         for (num, ber) in self.flip:
             self.board[num][ber] = self.turn
-        
+        print self.flip, "<---- These are the flipped pebbles"
         return self.flip
         
     def prompt_move(self):
@@ -199,6 +202,7 @@ class Reversi(object):
                                 ] == 0)) and (bool(self.flip) == True):
                 self.board[int(self.move[0])][int(self.move[1])] = self.turn
                 self.print_board()
+                self.turn = ((self.turn % 2) + 1) # Changes turns
             elif (bool(re.match(r'[0-7][0-7]$', self.move)) == True) and (
                                             bool(self.flip_pebbles())):
                 print "Invalid: Player {} has a piece there.".format(
@@ -210,6 +214,6 @@ class Reversi(object):
 
 game = Reversi()        #temporary for developing code
 game.new_game()         #temporary for developing code
-for x in range(10):     #temporary for developing code
+for x in range(100):    #temporary for developing code
     game.prompt_move()  #temporary for developing code
 print 'Good move.'      #temporary for developing code
