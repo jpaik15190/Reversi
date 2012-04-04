@@ -1,1 +1,25 @@
-Testing
+Always check https://github.com/jpaik15190/Reversi to see if any changes need to be pulled to your local repository.
+
+Always push your changes to github after you've made changes to avoid a situation where another person starts working on an older version of the file and we end up with conflicting copies.
+
+<b>How to Push Changes</b>
+$ git add . (this adds all updated files in the current directory to the queue to be committed)
+$ git commit -am "comment" (this commits changes made to the files in the local repository)
+$ git push (this pushes all of the changes committed to github)
+
+<b>How to Pull Changes</b>
+Navigate to your local repository (../Reversi)
+$ git pull
+
+<b>Additional Commands</b>
+$ git status (view changes to be committed/pushed)
+$ git log (view recent changes that were pushed by you/others, Ctrl + Z to exit)
+
+<b>Basic Unix Commands</b>
+$ ls (lists the folders/files in the current path)
+$ cd <path> (navigate to the path, '..' goes up one level)
+$ pwd (prints the current working directory)
+$ touch <filename> (makes a blank file of the given name in the pwd)
+$ cat <filename> (displays the contents of the file on the terminal)
+
+If you are curious about anything else feel free to update this with questions or Google and update this file with more info!
