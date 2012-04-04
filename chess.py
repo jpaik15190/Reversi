@@ -1,5 +1,5 @@
 """CIS192 Final Project; Othello_Reversi;
-Paul Terwilliger, Jay Paik, Kirsten Lau"""
+Paul Terwilliger, Jay Paik, Kristen Lau"""
 import string
 import re
 
