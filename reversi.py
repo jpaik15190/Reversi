@@ -28,6 +28,26 @@ Bug found: when the series of numbers 53 32 24 63 42 35 is input, 35 doesn't
 flip over all of the pebbles that it should, namely the ones to the west of
 it.  I don't know why it doesn't flip them.  If someone finds it, you are
 amazing. I'll look at it later, thanks!
+
+(Jay) Question:
+Where would you like to move? Choose a two digit number 00-77: 21
+[(2, 2), (3, 2)] <---- These are the flipped pebbles
+21)0  1  2  3  4  5  6  7 
+0 [0, 0, 0, 0, 0, 0, 0, 0]
+1 [0, 0, 0, 0, 0, 0, 0, 0]
+2 [0, 1, 1, 1, 0, 0, 0, 0]
+3 [0, 0, 1, 2, 2, 0, 0, 0]
+4 [0, 2, 1, 1, 2, 0, 0, 0]
+5 [2, 1, 1, 1, 0, 2, 0, 0]
+6 [0, 0, 0, 0, 0, 0, 0, 0]
+7 [0, 0, 0, 0, 0, 0, 0, 0]
+--------------------------
+Where would you like to move? Choose a two digit number 00-77: 54
+[] <---- These are the flipped pebbles
+[] <---- These are the flipped pebbles
+Invalid entry, try again
+
+In this case, as Player 2, I cannot move to 54. Is this a bug?
 """
 
 class Reversi(object):
