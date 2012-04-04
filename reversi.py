@@ -81,7 +81,6 @@ class Reversi(object):
             if legal == 0:
                 counter = 0
             flip = flip_list[:counter]
-            #flip = ["".join([str(num), str(ber)]) for (num, ber) in flip_]
             return flip
 
         # Defined variables:
