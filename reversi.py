@@ -3,13 +3,13 @@ Paul Terwilliger, Jay Paik, Kirsten Lau"""
 import re
 import copy
 
-"""A few things that the rules still do not do: 
-a)allow a player to resign
---Note: this game will not allow the player to voluntarily "pass"
+"""(Paul) The game is complete and finished!  You guys should look over my 
+code for bugs.  Also, try playing a few games.  I haven't been able to find
+any bugs in the system.  I will probably start working on the engine now in
+a new different file that I will upload to github.
+Get cracking on the GUI and networking!!
 
-end_game doesn't set the other side to go first***
-
----BUG FIXED---
+--Note: type resign to exit the game.  
 """
 
 class Reversi(object):
@@ -24,6 +24,8 @@ class Reversi(object):
         self.skip = 0
         self.board_f = []
         self.end = 0
+        self.remember_first = 1
+        self.resign = 0
         
     def new_game(self):
         """Starts a new game of Reversi"""
@@ -40,6 +42,7 @@ class Reversi(object):
         self.flip = []
         self.skip = 0
         self.end = 0
+        self.resign = 0
         
     def check_end_game(self):
         """Checks to see if the game should end. To be run once every turn"""
@@ -72,27 +75,33 @@ class Reversi(object):
         """Ends a reversi game. Should output who wins and ask for a rematch
         (with sides switched). If a rematch is decided upon, new_game should
         be run."""
-        score_white = 0
-        score_black = 0
-        for row in self.board:
-            for square in row:
-                if square == 1:
-                    score_white += 1
-                elif square == 2:
-                    score_black += 1
-        print "FINAL SCORE: white: {} points, and black: {} points".format(
-                                                score_white, score_black)
-        if score_white == score_black:
-            print "The game is a tie!"
-        elif score_white > score_black:
-            print "Player 1 White wins!"
-        elif score_white < score_black:
-            print "Player 2 Black wins!"
-        play_again = raw_input("Would you like to play again? yes/no: ")
-        if play_again == "yes":
-            self.run_reversi()
-        else:
-            print "Game Over!"
+        if self.resign != 1:
+            score_white = 0
+            score_black = 0
+            for row in self.board:
+                for square in row:
+                    if square == 1:
+                        score_white += 1
+                    elif square == 2:
+                        score_black += 1
+            print "FINAL SCORE: white: {} points, and black: {} points".format(
+                                                    score_white, score_black)
+            if score_white == score_black:
+                print "The game is a tie!"
+            elif score_white > score_black:
+                print "Player 1 White wins!"
+            elif score_white < score_black:
+                print "Player 2 Black wins!"
+            play_again = raw_input("Would you like to play again? yes/no: ")
+            if play_again == "yes":
+                self.run_reversi()
+                self.turn = ((self.remember_first % 2) + 1)
+                self.remember_first = ((self.remember_first % 2) + 1)
+            else:
+                print "Game Over!"
+        if self.resign == 1:
+            print "Game Over! Player {} wins by resignation".format(
+                                                (self.turn % 2) + 1)
         
     def print_board(self):
         """Prints the board: temporary function for developing code"""
@@ -253,6 +262,9 @@ class Reversi(object):
                 else:
                     print "INVALID: no flipped tiles. Try again"
                     self.move = '99'
+            elif self.move == "resign":
+                self.resign = 1
+                break
             else:
                 print "Invalid entry, try again"
     
@@ -267,16 +279,18 @@ class Reversi(object):
         while self.end == 0:
             # Makes the player pass if there are no available moves.
             end = self.check_end_game()
-            if bool(end) == False:
+            if (bool(end) == False) and (self.resign != 1):
                 #make the player pass
                 print "No legal moves, Player {} passes!".format(self.turn)
                 self.turn = ((self.turn % 2) + 1)
                 self.skip += 1
                 if self.skip == 4:
                     self.end = 1
-            else:
+            elif (self.resign != 1):
                 self.prompt_move()
                 self.skip = 0
+            elif self.resign == 1:
+                break
         self.end_game()
 
 
