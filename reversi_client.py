@@ -27,7 +27,6 @@ class Client(ConnectionListener):
         self.points = [0, 0]
         
         self.movement = [0, 0]
-        self.color = None
     
     def Network_move(self, data):
         self.movement[data['player']] = data['pos']
@@ -37,10 +36,6 @@ class Client(ConnectionListener):
     
     def Network_ready(self, data):
         self.ready = not self.ready
-        if self.num == 0:
-            self.color = BLACK
-        else:
-            self.color = WHITE
     
     def Network_points(self, data):
         self.points[0] = data[0]
