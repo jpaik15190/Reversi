@@ -10,7 +10,9 @@ class ClientChannel(Channel):
         
     def Network_move(self, data):
         self._server.SendToAll(data)
-        pass
+    
+    def Network_turn(self, data):
+        self._server.SendToAll(data)
         
 class ReversiServer(Server):
     channelClass = ClientChannel
@@ -31,7 +33,7 @@ class ReversiServer(Server):
         print "Player connected at", addr[0], "at port", addr[1]
         
         self.players.append(player)
-        player.Send({'action': 'number', 'num': len(self.players)-1})
+        player.Send({'action': 'number', 'num': len(self.players)})
         
         if len(self.players) == 2:
            self.SendToAll({'action': 'ready'})
@@ -54,7 +56,7 @@ class ReversiServer(Server):
             elif self.wait_to_start == 0:
                 self.start = True
                 self.wait_to_start = -1
-                print "starting game"
+                #print "starting game"
                 self.SendToAll({'action': 'start'})
 
 print 'Enter the IP address of the server.'
