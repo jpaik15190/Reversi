@@ -1,10 +1,8 @@
 import pygame
-import sys
-import socket
 
 from PodSixNet.Connection import connection, ConnectionListener
 
-
+pygame.init()
 
 
 WHITE_DISC = 1
@@ -20,13 +18,9 @@ BLACK = (0, 0, 0)
 
 class Client(ConnectionListener):
     def __init__(self, host, port):
-        
-        pygame.init()
-        
         self.Connect((host, port))
         
         self.screen = pygame.display.set_mode((480+300, 480+120))
-        #self.screen = screen
         
         self.num = None
         
@@ -46,20 +40,20 @@ class Client(ConnectionListener):
         
         #default
         #-------
-        self.board[3][3] = 1
-        self.board[3][4] = 2
-        self.board[4][3] = 2
-        self.board[4][4] = 1
+        #self.board[3][3] = 1
+        #self.board[3][4] = 2
+        #self.board[4][3] = 2
+        #self.board[4][4] = 1
         
         #testing
         #-------
-        #self.board[1] = [1 for x in range(8)]
-        #self.board[2] = [2 for x in range(8)]
-        #self.board[3] = [2 for x in range(8)]
-        #self.board[4] = [2 for x in range(8)]
-        #self.board[5] = [2 for x in range(8)]
-        #self.board[6] = [1 for x in range(8)]
-        #self.board[6][7] = 0
+        self.board[1] = [1 for x in range(8)]
+        self.board[2] = [2 for x in range(8)]
+        self.board[3] = [2 for x in range(8)]
+        self.board[4] = [2 for x in range(8)]
+        self.board[5] = [2 for x in range(8)]
+        self.board[6] = [1 for x in range(8)]
+        self.board[6][7] = 0
     
     def Network_move(self, data):
         #self.movement[data['player']] = data['pos']
@@ -264,7 +258,7 @@ class Client(ConnectionListener):
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    sys.exit(0)
+                    exit(0)
                 elif self.start:
                     if event.type == pygame.MOUSEBUTTONDOWN and self.turn:
                         print event.pos
@@ -315,8 +309,8 @@ class Client(ConnectionListener):
                 
             pygame.time.wait(25)
 
-#print 'Enter the server IP address'
-#print 'Empty for localhost'
+print 'Enter the server IP address'
+print 'Empty for localhost'
 # ask the server IP address
 # server = raw_input('Server IP: ')
 # control if server is empty
@@ -325,13 +319,9 @@ class Client(ConnectionListener):
 
 # init the listener
 #client = Client(server, 31500)
-#client = Client('localhost', 31500)
+client = Client('localhost', 31500)
 # start the mainloop
-#client.Loop()
+client.Loop()
 
-def new_client(address, port):
-    #address = 'localhost'
-    client = Client(address, port)
-    client.Loop()
 
-#new_client('localhost', 31500)
+
