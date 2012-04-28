@@ -85,10 +85,10 @@ def two_player_host(address, port):
     client1.join()
     server1.join()
     
-    while True:
-        if not client1.is_alive():
-            server1.terminate()
-            break
+    #while True:
+    #    if not client1.is_alive():
+    #        server1.terminate()
+    #        break
             
 
 def two_player_client(address, port):

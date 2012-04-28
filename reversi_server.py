@@ -66,11 +66,13 @@ class ReversiServer(Server):
             while True:
             
                 self.Pump()
-            
+                
+                if self.quit:
+                    self.close()
+                    sys.exit(0)
+                
                 if self.start:
-                    if self.quit:
-                        self.close()
-                        sys.exit(0)
+                    pass
             
                 pygame.time.wait(25)
             
