@@ -276,13 +276,10 @@ class Client(ConnectionListener):
                         if tile in valid_moves:
                             tx, ty = tile
                             to_flip = self.get_flipped_discs(self.board, self.num, tx, ty)
-                            connection.Send({'action': 'move', 'player': self.num, 'pos': tile, 'flip': to_flip})
-                            
+                            connection.Send({'action': 'move', 'player': self.num, 'pos': tile, 'flip': to_flip})                            
                         
                     #take care of other menu item clicks here
 
-            
-                        
             if self.start:
                 self.screen.fill(NAVAJO_WHITE)
                 self.draw_board(self.screen)
