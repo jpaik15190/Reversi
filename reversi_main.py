@@ -31,7 +31,7 @@ def main():
                 print event.pos
                 #pygame.quit()
                 
-                two_player_host('localhost', 31500, screen)
+                two_player_host('localhost', 31500)
                 break
                 
         pygame.display.flip()

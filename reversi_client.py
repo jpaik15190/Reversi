@@ -18,6 +18,7 @@ NAVAJO_WHITE = (238, 207, 161)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+
 class Client(ConnectionListener):
     def __init__(self, host, port):
         
@@ -36,30 +37,58 @@ class Client(ConnectionListener):
         
         self.start = False
         
+        self.gameover = False
+        
+        self.window = pygame.image.load('gameover.png')
+        self.window = pygame.transform.smoothscale(self.window, (780, 600))
+        self.window_rect = self.window.get_rect()
+        self.window_rect.topleft = (0, 0)
+        #self.window_rect.topleft = (240, 210)
+        
+        self.win = pygame.image.load('win.png')
+        self.win_rect = self.win.get_rect() #(400,323)
+        self.win_rect.topleft = (190, 138)
+        
+        
+        
+        
         self.font = pygame.font.SysFont('tahoma', 20, False)
+        self.font2 = pygame.font.SysFont('tahoma', 40, False)
+        self.font3 = pygame.font.SysFont('tahoma', 30, False)
         
-        self.points = [0, 0]
+        self.play_again = self.font2.render('Play Again', True, WHITE)
+        self.play_again_rect = self.play_again.get_rect()
+        self.play_again_rect.topleft = (210, 480)
+        self.quit_game = self.font2.render('Quit', True, WHITE)
+        self.quit_game_rect = self.quit_game.get_rect()
+        self.quit_game_rect.topleft = (492, 480)
         
-        self.movement = [0, 0]
-        
-        self.board = [[0 for x in range(8)] for y in range(8)]
+        self.board = self.set_board()
+
+    
+    def set_board(self):
+        board = [[0 for x in range(8)] for y in range(8)]
         
         #default
         #-------
-        self.board[3][3] = 1
-        self.board[3][4] = 2
-        self.board[4][3] = 2
-        self.board[4][4] = 1
+        board[3][3] = 1
+        board[3][4] = 2
+        board[4][3] = 2
+        board[4][4] = 1
         
         #testing
         #-------
-        #self.board[1] = [1 for x in range(8)]
-        #self.board[2] = [2 for x in range(8)]
-        #self.board[3] = [2 for x in range(8)]
-        #self.board[4] = [2 for x in range(8)]
-        #self.board[5] = [2 for x in range(8)]
-        #self.board[6] = [1 for x in range(8)]
-        #self.board[6][7] = 0
+        #board[0] = [1 for x in range(8)]
+        #board[1] = [1 for x in range(8)]
+        #board[2] = [2 for x in range(8)]
+        #board[3] = [2 for x in range(8)]
+        #board[4] = [2 for x in range(8)]
+        #board[5] = [2 for x in range(8)]
+        #board[6] = [1 for x in range(8)]
+        #board[7] = [1 for x in range(8)]
+        #board[7][7] = 0
+        
+        return board
     
     def Network_move(self, data):
         #self.movement[data['player']] = data['pos']
@@ -75,6 +104,21 @@ class Client(ConnectionListener):
         for x_to_flip, y_to_flip in data['flip']:
             self.board[x_to_flip][y_to_flip] = data['player']
         self.board[x][y] = data['player']
+        
+    def Network_reset(self, data):
+        print data['message']
+        self.board = self.set_board()
+        self.turn = False
+        self.ready = False
+        self.start = False
+        self.gameover = False
+        if self.num == 2:
+           self.turn = True
+        
+    def Network_quit(self, data):
+        print data['message']
+        connection.Close()
+        sys.exit(0)
         
     def Network_number(self, data):
         self.num = data['num']
@@ -257,6 +301,11 @@ class Client(ConnectionListener):
             connection.Pump()
             self.Pump()
             
+            if not self.start and not connection.isConnected:
+                print "The host does not exist."
+                connection.Close()
+                sys.exit(0)
+            
             if self.start:
                 if self.turn and not self.get_valid_moves(self.board, self.num) and self.get_valid_moves(self.board, self.get_opponent()):
                     connection.Send({'action': 'turn', 'player': self.num})
@@ -264,11 +313,12 @@ class Client(ConnectionListener):
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    connection.Close()
                     sys.exit(0)
                 elif self.start:
                     if event.type == pygame.MOUSEBUTTONDOWN and self.turn:
-                        print event.pos
-                        print self.num
+                        #print event.pos
+                        #print self.num
                         cx, cy = event.pos
                         tile = self.get_index_from_coords(cx, cy)
                         valid_moves = self.get_valid_moves(self.board, self.num)
@@ -277,6 +327,15 @@ class Client(ConnectionListener):
                             tx, ty = tile
                             to_flip = self.get_flipped_discs(self.board, self.num, tx, ty)
                             connection.Send({'action': 'move', 'player': self.num, 'pos': tile, 'flip': to_flip})
+                if self.gameover:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        cx, cy = event.pos
+                        if self.quit_game_rect.collidepoint((cx, cy)):
+                            connection.Close()
+                            sys.exit(0)
+                        elif self.play_again_rect.collidepoint((cx, cy)):
+                            connection.Send({'action': 'reset', 'message': "Let's play again!"})
+                
                             
                         
                     #take care of other menu item clicks here
@@ -284,27 +343,44 @@ class Client(ConnectionListener):
             
                         
             if self.start:
+                
+                if not connection.isConnected:
+                    print "The host has left the game."
+                    connection.Close()
+                    sys.exit(0)
+                
                 self.screen.fill(NAVAJO_WHITE)
                 self.draw_board(self.screen)
                 if self.no_more_valid_moves():
                     
                     my_score, opp_score = self.get_my_score(self.board)
                     
-                    self.screen.blit(self.font.render('Game Over', True, BLUE), (390-self.font.size('Game Over')[0]/2, 270))
+                    self.screen.blit(self.window, self.window_rect)
+                    #self.screen.blit(self.font2.render('Game Over', True, BLUE), (390-self.font2.size('Game Over')[0]/2, 260))
+                    
                     
                     if my_score > opp_score:
-                        self.screen.blit(self.font.render('YOU WIN!', True, RED), (390-self.font.size('YOU WIN!')[0]/2, 300))
+                        self.screen.blit(self.win, self.win_rect)
+                        #self.screen.blit(self.font2.render('You Win!', True, RED), (390-self.font2.size('You Win!')[0]/2, 320))
                     elif my_score < opp_score:
-                        self.screen.blit(self.font.render('YOU LOSE!', True, RED), (390-self.font.size('YOU LOSE!')[0]/2, 300))
+                        self.screen.blit(self.font2.render('You Lose!', True, RED), (390-self.font2.size('You Lose!')[0]/2, 365))
                     elif my_score == opp_score:
-                        self.screen.blit(self.font.render('DRAW!', True, RED), (390-self.font.size('DRAW!')[0]/2, 300))
+                        self.screen.blit(self.font2.render('Draw!', True, RED), (390-self.font2.size('Draw!')[0]/2, 365))
+                    
+                    
+                    
+                    self.screen.blit(self.play_again, self.play_again_rect)
+                    self.screen.blit(self.quit_game, self.quit_game_rect)  
+                    
+                    self.gameover = True
+                    
                     
             	pygame.display.flip()
             
 
             if self.ready:
                 self.screen.fill(NAVAJO_WHITE)
-                self.screen.blit(self.font.render('Ready', True, BLACK), (390-self.font.size('Ready')[0]/2, 300))
+                self.screen.blit(self.font.render('Ready?', True, BLACK), (390-self.font.size('Ready')[0]/2, 300))
                 pygame.display.flip()
                 self.screen.fill(NAVAJO_WHITE)
             elif not self.start:

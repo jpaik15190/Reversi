@@ -1,6 +1,7 @@
 import sys
 import pygame
 import socket
+import time
 
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
@@ -18,6 +19,10 @@ class ClientChannel(Channel):
     
     def Network_turn(self, data):
         self._server.SendToAll(data)
+        
+    def Network_reset(self, data):
+        self._server.SendToAll(data)
+        self._server.replay()
 
         
 class ReversiServer(Server):
@@ -34,28 +39,42 @@ class ReversiServer(Server):
         
         self.address, self.port = kwargs['localaddr']
         print "Server started at", self.address, "at port", str(self.port)
-        print "Now you can start the clients"
+        #print "Now you can start the clients"
     
     def DelPlayer(self, player):
-        print "Deleting Player" + str(player.addr)
-        self.players.remove(player)
+        if player in self.players:
+            print "Deleting Player" + str(player.addr)
+            self.players.remove(player)
         
         if self.host not in self.players:
             self.quit = 1
+        elif len(self.players) == 1 and self.host in self.players:
+            #print "opponent left"
+            self.SendToAll({'action': 'reset', 'message': "Your opponent has left the game!"})
     
     def Connected(self, player, addr):
-        print "Player connected at", addr[0], "at port", addr[1]
-        
-        self.players.append(player)
-        
-        if not self.host:
-            self.host = player
-        
-        player.Send({'action': 'number', 'num': len(self.players)})
-        
+       
         if len(self.players) == 2:
-           self.SendToAll({'action': 'ready'})
-           self.wait_to_start = 3000
+            player.Send({'action': 'quit', 'message': "There are already two players in that game."})
+            #print self.players
+        else:
+            print "Player connected at", addr[0], "at port", addr[1]
+        
+            self.players.append(player)
+        
+            if not self.host:
+                self.host = player
+        
+            player.Send({'action': 'number', 'num': len(self.players)})
+        
+            if len(self.players) == 2:
+               self.SendToAll({'action': 'ready'})
+               self.wait_to_start = 3000
+    
+    def replay(self):
+        if len(self.players) == 2:
+            self.SendToAll({'action': 'ready'})
+            self.wait_to_start = 3000
         
     def SendToAll(self, data):
         [p.Send(data) for p in self.players]
@@ -87,7 +106,7 @@ class ReversiServer(Server):
         except KeyboardInterrupt:
             self.close()
             sys.exit(0)
-            
+
         self.close()
         sys.exit(0)
 
