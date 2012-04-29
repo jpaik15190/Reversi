@@ -2,6 +2,7 @@ import pygame
 import sys
 import socket
 
+from textrect import render_textrect
 from PodSixNet.Connection import connection, ConnectionListener
 
 FPS = 10 # frames per second to update the screen
@@ -38,7 +39,7 @@ class Client(ConnectionListener):
         
         pygame.init()
         
-        global MAINCLOCK, DISPLAYSURF, RAVIE_FONT, WINDOW_BG, BRIT_FONT, CHOOSE_BG, SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, OVER_BG_RECT, YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT, BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_BG, ABOUT_RECT
+        global MAINCLOCK, DISPLAYSURF, RAVIE_FONT, WINDOW_BG, BRIT_FONT, CHOOSE_BG, SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, OVER_BG_RECT, YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT, BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_BG, ABOUT_RECT, ABOUT_CLOSE, ABOUT_CLOSE_RECT
         
         self.Connect((host, port))
         self.host_addr = str(host) #+ ":" + str(port)
@@ -46,6 +47,11 @@ class Client(ConnectionListener):
         self.screen = pygame.display.set_mode((WINDOW_X, WINDOW_Y))
         pygame.display.set_caption('*** REVERSI ***')
         
+        
+        game_rules_txt = ""
+        input_file = open("reversi_rules.txt", 'rU')
+        for line in input_file:
+            game_rules_txt += line
         
         #self.screen = screen
         
@@ -58,15 +64,27 @@ class Client(ConnectionListener):
         self.start = False
         
         self.gameover = False
+        self.about = False
         
         self.font = pygame.font.SysFont('tahoma', 20, False)
+        self.close_font = pygame.font.SysFont('tahoma', 16, True)
         self.font2 = pygame.font.SysFont('tahoma', 40, False)
         self.font3 = pygame.font.SysFont('tahoma', 30, False)
+        self.rules_font = pygame.font.SysFont('tahoma', 12, False)
+        self.rules_rect = pygame.Rect((40, 40, 400, 450))
+        self.rules_rect.center = (WINDOW_X/2, WINDOW_Y/2)
+        
+        self.rules_surf = render_textrect(game_rules_txt, self.rules_font, self.rules_rect, BLACK, WHITE)
+        self.rules_surf.set_alpha(200)
         
         BRIT_FONT = pygame.font.Font('BRITANIC.ttf', 28)
         RAVIE_FONT = pygame.font.Font('RAVIE.ttf', 35)
         SNAP_FONT = pygame.font.Font('SNAP.ttf', 50)
         BRIT_FONT_BIG = pygame.font.Font('BRITANIC.ttf', 85)
+        
+        ABOUT_CLOSE = self.close_font.render("Close", True, BLACK)
+        ABOUT_CLOSE_RECT = ABOUT_CLOSE.get_rect()
+        ABOUT_CLOSE_RECT.center = (WINDOW_X/2, 508)
         
         YOUR_TURN = self.font.render("Your turn", True, WHITE)
         YOUR_TURN_RECT = YOUR_TURN.get_rect()
@@ -401,7 +419,12 @@ class Client(ConnectionListener):
             screen.blit(YOUR_TURN, YOUR_TURN_RECT)
         else:
             screen.blit(OPP_TURN, OPP_TURN_RECT)
-            
+    
+    def display_about(self, screen):
+       if self.about:
+           screen.blit(self.rules_surf, self.rules_rect)
+           screen.blit(ABOUT_CLOSE, ABOUT_CLOSE_RECT)
+           
     
     def display_game_over(self, screen):
         my_score, opp_score = self.get_my_score(self.board)
@@ -524,7 +547,9 @@ class Client(ConnectionListener):
                             connection.Close()
                             sys.exit()
                         elif ABOUT_RECT.collidepoint((cx, cy)):
-                            print 'This is a game of Reversi.  Good luck!'     
+                            self.about = True
+                        if self.about and ABOUT_CLOSE_RECT.collidepoint((cx, cy)):
+                            self.about = False
                     
                 if self.gameover:
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -553,6 +578,7 @@ class Client(ConnectionListener):
                 self.display_buttons(self.screen)
                 self.display_score(self.screen)
                 self.display_whose_turn(self.screen)
+                self.display_about(self.screen)
                 
                 if self.no_more_valid_moves():
                     """
