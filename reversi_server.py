@@ -10,8 +10,6 @@
 
 import sys
 import pygame
-import socket
-import time
 
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
@@ -88,8 +86,8 @@ that game."})
             player.Send({'action': 'number', 'num': len(self.players)})
         
             if len(self.players) == 2:
-               self.SendToAll({'action': 'ready'})
-               self.wait_to_start = 3000
+                self.SendToAll({'action': 'ready'})
+                self.wait_to_start = 3000
     
     def replay(self):
         """Reset the game to replay."""

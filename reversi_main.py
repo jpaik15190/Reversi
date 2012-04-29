@@ -8,13 +8,10 @@
 # Required modules: pygame, numpy
 # Included module: textrect
 
-import sys
 import reversi_server
 import reversi_client
 import reversi_single
-import time
 from multiprocessing import Process
-import pygame
 import socket
 
 DARK_OLIVE_GREEN = (85, 107, 47)
@@ -52,10 +49,10 @@ Please try again."
             two_player_host(addr, 31513)
         elif host_or_join == '2':
             print "Enter the IP address of the host (blank for localhost)"
-            ip = raw_input('IP: ')
-            if ip == '':
-                ip = 'localhost'
-            two_player_client(ip, 31513)
+            ip_addr = raw_input('IP: ')
+            if ip_addr == '':
+                ip_addr = 'localhost'
+            two_player_client(ip_addr, 31513)
 
 def one_player():
     """Run a new single player game."""

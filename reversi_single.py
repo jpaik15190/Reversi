@@ -10,7 +10,6 @@
 
 import pygame
 import sys
-import socket
 import reversi_engine
 import numpy
 from textrect import render_textrect
@@ -34,7 +33,7 @@ RED = (255, 0, 0)
 NAVAJO_WHITE = (238, 207, 161)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GREEN = (0,155,0)
+GREEN = (0, 155, 0)
 YELLOW = (255, 255, 0)
 PINK = (255, 62, 150)
 ORANGE = (255, 127, 0)
@@ -47,12 +46,11 @@ class Game(object):
     def __init__(self):
         """Initialize the single player game."""
 
-        global MAINCLOCK, DISPLAYSURF, RAVIE_FONT, WINDOW_BG, BRIT_FONT, \
-               CHOOSE_BG, SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, \
-               OVER_BG_RECT, YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, \
-               OPP_TURN_RECT, BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, \
-               TROPHY_RECT, ABOUT_BG, ABOUT_RECT, ABOUT_CLOSE, \
-               ABOUT_CLOSE_RECT, TIE, TIE_RECT
+        global RAVIE_FONT, WINDOW_BG, BRIT_FONT, SNAP_FONT, START_BG, \
+               START_BG_RECT, OVER_BG, OVER_BG_RECT, YOUR_TURN, \
+               YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT, BRIT_FONT_BIG, SAD, \
+               SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_CLOSE, ABOUT_CLOSE_RECT, \
+               TIE, TIE_RECT
  
         pygame.init() # Initialize pygame
         
@@ -101,10 +99,10 @@ class Game(object):
         # Turn display
         YOUR_TURN = self.font.render("Your turn", True, WHITE)
         YOUR_TURN_RECT = YOUR_TURN.get_rect()
-        YOUR_TURN_RECT.center= (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
+        YOUR_TURN_RECT.center = (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
         OPP_TURN = self.font.render("The computer is thinking...", True, WHITE)
         OPP_TURN_RECT = OPP_TURN.get_rect()
-        OPP_TURN_RECT.center= (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
+        OPP_TURN_RECT.center = (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
         
         # Starting screen background
         START_BG = pygame.image.load('sky2.jpg')
@@ -133,17 +131,17 @@ class Game(object):
         # Game over image: loss
         SAD = pygame.image.load('sad_lost_small.jpg')
         SAD_RECT = SAD.get_rect()
-        SAD_RECT.center=(int(WINDOW_X/2), 250)
+        SAD_RECT.center = (int(WINDOW_X/2), 250)
 
         # Game over image: win
         TROPHY = pygame.image.load('winner_small.jpg')
         TROPHY_RECT = TROPHY.get_rect()
-        TROPHY_RECT.center=(int(WINDOW_X/2), 250)
+        TROPHY_RECT.center = (int(WINDOW_X/2), 250)
 
         # Game over image: tie
         TIE = pygame.image.load('tie_small.jpg')  
         TIE_RECT = TIE.get_rect()
-        TIE_RECT.center=(int(WINDOW_X/2), 250)
+        TIE_RECT.center = (int(WINDOW_X/2), 250)
         
         # Game over button: play again
         self.play_again = BRIT_FONT.render('Play Again!', True, RED)
@@ -341,8 +339,8 @@ class Game(object):
 
         # Game title label
         title_surf = RAVIE_FONT.render('REVERSI', True, YELLOW)
-        TITLE_RECT= title_surf.get_rect()
-        TITLE_RECT.center= (WINDOW_X / 2, 30)
+        TITLE_RECT = title_surf.get_rect()
+        TITLE_RECT.center = (WINDOW_X / 2, 30)
 
         # Player 1 label
         player1_surf = BRIT_FONT.render('You', True, ORANGE)
