@@ -18,6 +18,9 @@ class ReversiEngine(object):
         self.board = array.array("B", (np_board.flat))
         self.base_moves = []
         self.max_counter = 0
+
+        self.elapsed = 0     # Temporary for developing code
+        self.elapsed_two = 0 # Temporary for developing code
         
         self.to_array = { # For converting <tuple_coors> to <array_coors>
             (0, 0):  0, (0, 1):  1, (0, 2):  2, (0, 3):  3, (0, 4):  4, 
@@ -106,18 +109,18 @@ class ReversiEngine(object):
         turn_c = turn
         
         # Designating variables for the trees
-        tree_one = self.tree_one
-        tree_two = self.tree_two
-        tree_thr = self.tree_thr
-        tree_fou = self.tree_fou
-        tree_fiv = self.tree_fiv
-        tree_six = self.tree_six
-        tree_sev = self.tree_sev
-        tree_eig = self.tree_eig
-        tree_nin = self.tree_nin 
-        tree_ten = self.tree_ten 
-        tree_ele = self.tree_ele 
-        tree_twe = self.tree_twe  
+        tree_one = self.tree_one = []
+        tree_two = self.tree_two = []
+        tree_thr = self.tree_thr = []
+        tree_fou = self.tree_fou = []
+        tree_fiv = self.tree_fiv = []
+        tree_six = self.tree_six = []
+        tree_sev = self.tree_sev = []
+        tree_eig = self.tree_eig = []
+        tree_nin = self.tree_nin = []
+        tree_ten = self.tree_ten = []
+        tree_ele = self.tree_ele = []
+        tree_twe = self.tree_twe = []
 
         t_one_app = tree_one.append
         t_two_app = tree_two.append
@@ -156,12 +159,14 @@ class ReversiEngine(object):
             return tree_num
         
         # Creates tree_one
-        b_gen = (coor for coor in xrange(64) if (board[coor] == 0))
+        b_gen = [coor for coor in xrange(64) if (board[coor] == 0)]
         for coor in b_gen:
             out_brd = single_move(board, coor, turn)
             if bool(out_brd) == True:
                 t_one_app(counting(out_brd))
                 m_app(self.to_coors[coor])
+
+        print len(tree_one), "len(tree_one)"
 
         current_search = False
         try: # Allows me to break out of the loop with the exception BreakTreeSearch
@@ -180,6 +185,8 @@ class ReversiEngine(object):
                     current_search = tree_thr
                     print "starting <tree_thr>..."
                     tree_thr = [map(first_app, row_two) for row_two in tree_two]
+                    current_search = tree_fou
+                    raise BreakTreeSearch
 
                 # Creates tree_fou from the boards in tree_thr
                 elif bool(tree_fou) == False:
@@ -345,7 +352,10 @@ class ReversiEngine(object):
             if val == max(final_eval):
                 final_coor = coor
                 break
-        print self.base_moves[final_coor], "<--------"
+       
+        print self.base_moves, "BASEMOVES"
+        print self.elapsed, "<-- ELAPSED"
+        print self.elapsed_two
         return self.base_moves[final_coor]
        
     def single_move(self, dont_touch_this_board, ar_move, turn):
@@ -355,15 +365,17 @@ class ReversiEngine(object):
         def lgal(flip_list, turn):
             """Input is a list of <array_coors>, <turn>
             Output is a list of the to-be-flipped pebbles list(<array_coors>)."""
+            #startt = time.time()
             counter = 0
             sec = 0
-            for element in flip_list:
-                if board[element] == 0:
+            for num in flip_list:
+                if board[num] == 0:
                     break
-                elif board[element] == turn:
+                elif board[num] == turn:
                     counter = sec
                     break
                 sec += 1
+            #self.elapsed_two += time.time() - startt
             return flip_list[:counter]
 
         # Defined variables:
@@ -381,6 +393,8 @@ class ReversiEngine(object):
         swest = []
         west_ = []
         nwest = []
+
+        start = time.time()
 
         # Enemy north
         if (1 < coo_y) and (board[self.to_array[((coo_y - 1), coo_x)]] == turn_f):
@@ -437,6 +451,8 @@ class ReversiEngine(object):
         flip = (lgal(north, turn) + lgal(neast, turn) + lgal(east_, turn) + lgal(seast, turn)
               + lgal(south, turn) + lgal(swest, turn) + lgal(west_, turn) + lgal(nwest, turn))
         
+        self.elapsed += time.time() - start
+
         # Flips over the pebbles chosen by flip
         legal = False
         for ar_flipped in flip:
@@ -457,7 +473,7 @@ class ReversiEngine(object):
             score = (-1) * score
         return score
 
-"""
+'''
 boary = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
          [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
          [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
@@ -484,4 +500,4 @@ revers = ReversiEngine(boardnp, 1)  # Temporary for developing code
 revers.best(boardnp)  # Temporary for developing code
 elapsed = (time.time() - start)  # Temporary for developing code
 print elapsed  # Temporary for developing code
-print "<max_counter> =", revers.max_counter  # Temporary for developing code"""
+print "<max_counter> =", revers.max_counter  # Temporary for developing code'''
