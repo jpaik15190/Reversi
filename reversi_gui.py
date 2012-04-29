@@ -14,18 +14,20 @@ XMARGIN = int((WINDOW_X-(BOARD_X*SQUARE_SIZE))/2)
 YMARGIN = int((WINDOW_Y-(BOARD_Y*SQUARE_SIZE))/2)
 
 WHITE = (255,255,255)
-BLACK= (0,0,0)
-GREEN= (0,155,0)
-BLUE= (0,0,255)
-RED= (255,0,0)
+BLACK = (0,0,0)
+GREEN = (0,155,0)
+BLUE = (0,0,255)
+RED = (255,0,0)
 YELLOW = (255, 255, 0)
 PINK = (255, 62, 150)
 ORANGE = (255, 127, 0)
+DARKRED = (139, 0, 0)
+PURPLE = (142, 56, 142)
 
 def main():
     
     global MAINCLOCK, DISPLAYSURF, RAVIE_FONT, WINDOW_BG, BRIT_FONT, CHOOSE_BG, SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, OVER_BG_RECT
-
+    global BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_BG, ABOUT_RECT
     pygame.init()
     
     MAINCLOCK = pygame.time.Clock()
@@ -35,7 +37,8 @@ def main():
     BRIT_FONT = pygame.font.Font('BRITANIC.ttf', 28)
     RAVIE_FONT = pygame.font.Font('RAVIE.ttf', 35)
     SNAP_FONT = pygame.font.Font('SNAP.ttf', 50)
-
+    
+    BRIT_FONT_BIG = pygame.font.Font('BRITANIC.ttf', 85)
 
     START_BG = pygame.image.load('sky2.jpg')
     START_BG = pygame.transform.smoothscale(START_BG, (WINDOW_X, WINDOW_Y))
@@ -55,7 +58,20 @@ def main():
     OVER_BG = pygame.transform.smoothscale(OVER_BG, (WINDOW_X, WINDOW_Y))
     OVER_BG_RECT = OVER_BG.get_rect()
     OVER_BG.blit(OVER_BG, OVER_BG_RECT)
-
+    
+    SAD = pygame.image.load('sad_lost_small.jpg')
+    #SAD = pygame.transform.smoothscale(SAD, (WINDOW_X, WINDOW_Y))
+    SAD_RECT = SAD.get_rect()
+    SAD.blit(SAD, SAD_RECT)
+    
+    TROPHY = pygame.image.load('winner_small.jpg')
+    TROPHY_RECT = TROPHY.get_rect()
+    TROPHY.blit(TROPHY, TROPHY_RECT)
+    
+    ABOUT_BG = pygame.image.load('sunset.jpg')
+    ABOUT_BG = pygame.transform.smoothscale(ABOUT_BG, (WINDOW_X, WINDOW_Y))
+    ABOUT_RECT = ABOUT_BG.get_rect()
+    ABOUT_BG.blit(ABOUT_BG, ABOUT_RECT)
    # run game    
     while True:
         if reversi_run() == False:
@@ -75,7 +91,7 @@ def reversi_run():
     
     #player 1 defaults to human player, player 2 defaults to computer
     turn = 'player'
-    print turn
+    print turn   
     
     while True:
         
@@ -90,10 +106,13 @@ def reversi_run():
                         
             else: 
                 valid_moves = get_valid_moves(board, player_colour)
+                quit_check()
                 for event in pygame.event.get(): # event handling loop
                     if event.type == MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
                         if ABOUT_RECT.collidepoint((mouse_x, mouse_y)):
+                            display_rules()
+                            pygame.display.update()
                             print 'This is a game of Reversi.  Good luck!'                        
                         elif NEWGAME_RECT.collidepoint((mouse_x, mouse_y)):   
                             print 'new game'
@@ -123,8 +142,7 @@ def reversi_run():
                             
                             print board                    
                         
-                        draw_board(board)
-                        
+                        draw_board(board)                        
     
                 turn = 'computer'
                        
@@ -136,7 +154,7 @@ def reversi_run():
             turn = 'player'         
     
     # 'Game Over' screen  
-    display_game_over()
+    display_game_over(score)
     
     while True:
         # Process events until the user clicks on Yes or No.
@@ -152,34 +170,50 @@ def reversi_run():
 
         pygame.display.update()
 
-def display_game_over():
+def display_game_over(score):
     
     global YES_RECT, NO_RECT
     
-    text_surf = BRIT_FONT.render("Game Over!", True, GREEN)
-    text_rect = text_surf.get_rect()
-    text_rect.center = (int(WINDOW_X/2), int(WINDOW_Y/2)-100)
-
-    text2_surf = BRIT_FONT.render('Play again?', True, WHITE)
-    text2_rect = text2_surf.get_rect()
-    text2_rect.center = (int(WINDOW_X/2), int(WINDOW_Y/2))
-
-    yes_surf = BRIT_FONT.render('Yes', True, WHITE)
-    YES_RECT = yes_surf.get_rect()
-    YES_RECT.center = (int(WINDOW_X/2) - 60, int(WINDOW_Y/2) + 90)
-
-    # Make "No" button.
-    no_surf = BRIT_FONT.render('No', True, WHITE)
-    NO_RECT = no_surf.get_rect()
-    NO_RECT.center = (int(WINDOW_X/2) + 60, int(WINDOW_Y/2) + 90)
     
     DISPLAYSURF.blit(OVER_BG, OVER_BG_RECT)
+    
+    if (score[0] > score [1]):
+        #player wins
+        TROPHY_RECT.center=(int(WINDOW_X/2), 250)
+        DISPLAYSURF.blit(TROPHY, TROPHY_RECT)
+        
+    else:
+        # player loses        
+        SAD_RECT.center=(int(WINDOW_X/2), 250)
+        DISPLAYSURF.blit(SAD, SAD_RECT)
+   
+    text_surf = BRIT_FONT_BIG.render("GAME OVER!", True, PURPLE)
+    text_rect = text_surf.get_rect()
+    text_rect.center = (int(WINDOW_X/2), 50)
+    
+    score_surf = BRIT_FONT.render(" %s  -- %s  " % (str(score[0]), str(score[1])), True, BLACK)
+    score_rect = score_surf.get_rect()
+    score_rect.center = (int(WINDOW_X/2), 400)
+
+    text2_surf = BRIT_FONT.render('What do you want to do?', True, BLACK)
+    text2_rect = text2_surf.get_rect()
+    text2_rect.center = (int(WINDOW_X/2), 450)
+
+    yes_surf = BRIT_FONT.render('Play again!', True, RED)
+    YES_RECT = yes_surf.get_rect()
+    YES_RECT.center = (int(WINDOW_X/2) - 100, 500)
+
+    # Make "No" button.
+    no_surf = BRIT_FONT.render('Exit', True, BLUE)
+    NO_RECT = no_surf.get_rect()
+    NO_RECT.center = (int(WINDOW_X/2) + 100, 500)
+    
     DISPLAYSURF.blit(text_surf, text_rect)
     DISPLAYSURF.blit(text2_surf, text2_rect)
     DISPLAYSURF.blit(yes_surf, YES_RECT)
     DISPLAYSURF.blit(no_surf, NO_RECT)  
-     
-
+    DISPLAYSURF.blit(score_surf, score_rect)
+    
 def display_score(score):
     
     score1 = str(score[0])
@@ -216,11 +250,11 @@ def display_buttons():
     TITLE_RECT= title_surf.get_rect()
     TITLE_RECT.center= (WINDOW_X/2, 40)
     
-    player1_surf = BRIT_FONT.render('Player 1', True, ORANGE)
+    player1_surf = BRIT_FONT.render('You', True, ORANGE)
     PLAYER1_RECT = player1_surf.get_rect()
     PLAYER1_RECT.topleft = (15, 200)
     
-    player2_surf = BRIT_FONT.render('Player 2', True, ORANGE)
+    player2_surf = BRIT_FONT.render('Computer', True, ORANGE)
     PLAYER2_RECT = player2_surf.get_rect()
     PLAYER2_RECT.topright = (WINDOW_X-15, 200)
     
@@ -314,7 +348,7 @@ def choose_colour():
     title_rect= title_surf.get_rect()
     title_rect.center= (WINDOW_X/2, 40)
 
-    prompt_surf = BRIT_FONT.render('Choose your colour:', True, BLUE)
+    prompt_surf = BRIT_FONT_BIG.render('Choose your colour:', True, BLUE)
     prompt_rect = prompt_surf.get_rect()
     prompt_rect.center = (round(WINDOW_X/2), round(WINDOW_Y/2)-100)
 
@@ -334,8 +368,8 @@ def choose_colour():
             if event.type == MOUSEBUTTONUP:
                 mouse_x, mouse_y = event.pos
                 if white_rect.collidepoint((mouse_x, mouse_y)):
-                    PLAYER1_COLOUR = "White"
-                    PLAYER2_COLOUR = "Black"
+                    PLAYER1_COLOUR = "WHITE"
+                    PLAYER2_COLOUR = "BLACK"
                     COLOUR1 = WHITE
                     COLOUR2 = BLACK
                     print 'white'
@@ -355,7 +389,12 @@ def choose_colour():
         DISPLAYSURF.blit(black_surf, black_rect)
         pygame.display.update()
 
-        MAINCLOCK.tick(FPS)
+
+def display_rules():
+    
+    DISPLAYSURF.blit(ABOUT_BG, ABOUT_RECT)
+    
+    
 
 def get_score(board):
     black_score = 0
