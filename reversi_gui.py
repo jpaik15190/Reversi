@@ -66,12 +66,12 @@ def main():
     
     TROPHY = pygame.image.load('winner_small.jpg')
     TROPHY_RECT = TROPHY.get_rect()
-    TROPHY.blit(TROPHY, TROPHY_RECT)
+    TROPHY.blit(TROPHY, TROPHY_RECT)    
     
-    ABOUT_BG = pygame.image.load('sunset.jpg')
-    ABOUT_BG = pygame.transform.smoothscale(ABOUT_BG, (WINDOW_X, WINDOW_Y))
-    ABOUT_RECT = ABOUT_BG.get_rect()
-    ABOUT_BG.blit(ABOUT_BG, ABOUT_RECT)
+    #ABOUT_BG = pygame.image.load('aurora3.jpg')
+    #ABOUT_BG = pygame.transform.smoothscale(ABOUT_BG, (WINDOW_X, WINDOW_Y))
+    #ABOUT_RECT = ABOUT_BG.get_rect()
+    #ABOUT_BG.blit(ABOUT_BG, ABOUT_RECT)
    # run game    
     while True:
         if reversi_run() == False:
@@ -95,10 +95,7 @@ def reversi_run():
     
     while True:
         
-        score = get_my_score(board, player_colour)
-        print score
-        display_score(score)
-        pygame.display.update() 
+        
         
         if turn == 'player':            
             if no_more_valid_moves(board, player_colour) == True:
@@ -111,14 +108,14 @@ def reversi_run():
                     if event.type == MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
                         if ABOUT_RECT.collidepoint((mouse_x, mouse_y)):
+                            #pygame.display.flip()
                             display_rules()
-                            pygame.display.update()
-                            print 'This is a game of Reversi.  Good luck!'                        
+                            break
+                            print 'This is a game of Reversi.  Good luck!'
                         elif NEWGAME_RECT.collidepoint((mouse_x, mouse_y)):   
                             print 'new game'
                             return True                         
-                            break       
-                           
+                            break                          
                             pygame.display.update()                        
                             return True
                         
@@ -133,14 +130,19 @@ def reversi_run():
                         if game_move in valid_moves:
                             flipx, flipy = game_move
                             to_flip = get_flipped_discs(board, player_colour, flipx, flipy)
-                            print flipx, flipy
-                            print to_flip
+                            #print flipx, flipy
+                            #print to_flip
                             
                             for x,y in to_flip:
                                 board[x][y] = player_colour
                             board[flipx][flipy]= player_colour
                             
-                            print board                    
+                            #print board
+                            
+                            score = get_my_score(board, player_colour)
+                            #print score
+                            display_score(score)
+                            pygame.display.update()                  
                         
                         draw_board(board)                        
     
@@ -173,8 +175,7 @@ def reversi_run():
 def display_game_over(score):
     
     global YES_RECT, NO_RECT
-    
-    
+        
     DISPLAYSURF.blit(OVER_BG, OVER_BG_RECT)
     
     if (score[0] > score [1]):
@@ -191,7 +192,7 @@ def display_game_over(score):
     text_rect = text_surf.get_rect()
     text_rect.center = (int(WINDOW_X/2), 50)
     
-    score_surf = BRIT_FONT.render(" %s  -- %s  " % (str(score[0]), str(score[1])), True, BLACK)
+    score_surf = BRIT_FONT.render(" %s -- %s  " % (str(score[0]), str(score[1])), True, BLACK)
     score_rect = score_surf.get_rect()
     score_rect.center = (int(WINDOW_X/2), 400)
 
@@ -218,10 +219,7 @@ def display_score(score):
     
     score1 = str(score[0])
     score2 = str(score[1])
-    
-    print score1
-    print score2
-    
+   
     score1_surf = SNAP_FONT.render(score1, True, RED)
     score1_rect = score1_surf.get_rect()
     score1_rect.center = (60, 300)
@@ -244,32 +242,36 @@ def display_buttons():
     
     about_surf = BRIT_FONT.render('About', True, WHITE)
     ABOUT_RECT = about_surf.get_rect()
-    ABOUT_RECT.topright = (WINDOW_X - 8, 45)
+    ABOUT_RECT.topright = (WINDOW_X - 20, 30)
     
     title_surf = RAVIE_FONT.render('REVERSI', True, YELLOW)
     TITLE_RECT= title_surf.get_rect()
     TITLE_RECT.center= (WINDOW_X/2, 40)
-    
+       
     player1_surf = BRIT_FONT.render('You', True, ORANGE)
     PLAYER1_RECT = player1_surf.get_rect()
-    PLAYER1_RECT.topleft = (15, 200)
-    
-    player2_surf = BRIT_FONT.render('Computer', True, ORANGE)
+    #PLAYER1_RECT.topleft = (15, 200)
+    PLAYER1_RECT.topleft = (XMARGIN/2-BRIT_FONT.size('You')[0]/2, 200)
+       
+    player2_surf = BRIT_FONT.render('Opponent', True, ORANGE)
     PLAYER2_RECT = player2_surf.get_rect()
-    PLAYER2_RECT.topright = (WINDOW_X-15, 200)
-    
+    #PLAYER2_RECT.topright = (WINDOW_X-15, 200)
+    PLAYER2_RECT.topleft = (WINDOW_X-XMARGIN/2-BRIT_FONT.size('Opponent')[0]/2, 200)
+       
     colour1_surf = BRIT_FONT.render(PLAYER1_COLOUR, True, COLOUR1, COLOUR2)
     colour1_rect = colour1_surf.get_rect()
-    colour1_rect.topleft = (25, 230)
-    
+    #colour1_rect.topleft = (25, 240)
+    colour1_rect.topleft = (XMARGIN/2-BRIT_FONT.size(PLAYER1_COLOUR)[0]/2, 240)
+       
     colour2_surf = BRIT_FONT.render(PLAYER2_COLOUR, True, COLOUR2, COLOUR1)
     colour2_rect = colour2_surf.get_rect()
-    colour2_rect.topright = (WINDOW_X-25, 230)    
-    
+    #colour2_rect.topright = (WINDOW_X-25, 240)
+    colour2_rect.topleft = (WINDOW_X-XMARGIN/2-BRIT_FONT.size(PLAYER2_COLOUR)[0]/2, 240)
+       
     exit_surf = BRIT_FONT.render('EXIT', True, WHITE)
     EXIT_RECT = exit_surf.get_rect()
-    EXIT_RECT.topright = WINDOW_X-15, WINDOW_Y-50
-
+    EXIT_RECT.topright = WINDOW_X-20, WINDOW_Y-50
+    
     # put buttons on board
     DISPLAYSURF.blit(newgame_surf, NEWGAME_RECT)
     DISPLAYSURF.blit(about_surf, ABOUT_RECT)
@@ -389,12 +391,31 @@ def choose_colour():
         DISPLAYSURF.blit(black_surf, black_rect)
         pygame.display.update()
 
-
 def display_rules():
     
-    DISPLAYSURF.blit(ABOUT_BG, ABOUT_RECT)
+    #pygame.display.flip()
     
+    DISPLAYSURF.blit(START_BG, START_BG_RECT)
     
+    title_surf = RAVIE_FONT.render('REVERSI\nHello', True, BLACK)
+    title_rect= title_surf.get_rect()
+    title_rect.center= (WINDOW_X/2, 40)
+    
+    back_surf = BRIT_FONT.render('Go Back', True, WHITE)
+    back_rect = back_surf.get_rect()
+    back_rect.topleft = WINDOW_X-150, WINDOW_Y-50
+    
+    DISPLAYSURF.blit(title_surf, title_rect)
+    DISPLAYSURF.blit(back_surf, back_rect)    
+    pygame.display.update() 
+    quit_check()    
+    
+    for event in pygame.event.get(): # event handling loop
+        if event.type == MOUSEBUTTONUP:
+            mouse_x, mouse_y = event.pos
+            if back_rect.collidepoint((mouse_x, mouse_y)):
+                #pygame.display.flip()
+                print 'Go back'   
 
 def get_score(board):
     black_score = 0
