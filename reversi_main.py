@@ -57,10 +57,10 @@ def main():
             print "I'm sorry, but I did not recognize your choice. Please try again"
             host_or_join = raw_input('Choice: ')
         if host_or_join == '1':
-            #addr = socket.gethostbyname(socket.gethostname())
+            addr = socket.gethostbyname(socket.gethostname())
             
             ######LOCALHOST FOR TESTING PURPOSES
-            addr = 'localhost'
+            #addr = 'localhost'
             
             two_player_host(addr, 31513)
         elif host_or_join == '2':
