@@ -328,13 +328,6 @@ class Client(ConnectionListener):
             return True
         return False
     
-    #def num_to_color_string(self, num):
-        #if num == 1:
-        #    return "WHITE"
-        #elif num == 2:
-        #    return "BLACK"
-        #return None
-    
     def display_buttons(self, screen):
         """Display the labels and buttons on the game screen."""
         
