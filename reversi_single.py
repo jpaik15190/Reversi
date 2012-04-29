@@ -597,7 +597,7 @@ class Game(object):
                 pygame.display.flip()
                 
                 if self.initial_wait:
-                    pygame.time.delay(1000)
+                    pygame.time.delay(500)
                     self.initial_wait = False
                 
                 if self.opp_turn and self.get_valid_moves(self.board,
@@ -610,7 +610,7 @@ class Game(object):
                                                            self.opp_num,
                                                            fx, fy)
                         self.move(selected_ai_move, self.opp_num, to_flip_c)
-                        pygame.time.delay(1000)
+                        pygame.time.delay(500)
                     except ValueError:
                         print "Engine error: selected_ai_move is " + \
                               str(selected_ai_move)

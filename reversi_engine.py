@@ -71,7 +71,7 @@ class ReversiEngine(object):
         self.tree_ten = []
         self.tree_ele = []
         self.tree_twe = []
-            
+       	 
 
     def best(self, np_board):
         """Input is a <np.board>
@@ -139,7 +139,7 @@ class ReversiEngine(object):
         def counting(coor):
             """Used for calling BreakTreeSearch"""
             elapsed = (time.time() - start)
-            if elapsed > 1:
+            if elapsed > 2:
                 raise BreakTreeSearch
             self.max_counter += 1
             return coor
@@ -165,7 +165,10 @@ class ReversiEngine(object):
             if bool(out_brd) == True:
                 t_one_app(counting(out_brd))
                 m_app(self.to_coors[coor])
-
+        if bool(self.tree_one) == False:
+            print "MUST PASS"
+            return
+        
         current_search = False
         try: # Allows me to break out of the loop with the exception BreakTreeSearch
             while True:
@@ -176,25 +179,26 @@ class ReversiEngine(object):
                     current_search = tree_two 
                     print "starting <tree_two>..."
                     tree_two = map(first_app, tree_one)
+                    current_search = tree_thr
 
                 # Creates tree_thr from the boards in tree_two
                 elif bool(tree_thr) == False:
                     turn_c = turn
-                    current_search = tree_thr
                     print "starting <tree_thr>..."
                     tree_thr = [map(first_app, row_two) for row_two in tree_two]
                     current_search = tree_fou
-                    raise BreakTreeSearch
 
                 # Creates tree_fou from the boards in tree_thr
                 elif bool(tree_fou) == False:
                     turn_c = turn_f
-                    current_search = tree_fou
                     print "starting <tree_fou>..."
                     for row_thr in tree_thr:
                         row_fou = [map(first_app, row_two) for row_two in row_thr]
                         t_fou_app(row_fou)
                     print "4: <max_counter> =", self.max_counter
+                    current_search = tree_fiv
+
+                # Creates tree_fiv from the boards in tree_fou
                 elif bool(tree_fiv) == False:
                     turn_c = turn
                     current_search = tree_fiv
@@ -204,6 +208,8 @@ class ReversiEngine(object):
                                                             for row_thr in row_fou]
                         t_fiv_app(row_fiv)
                     print "5: <max_counter> =", self.max_counter
+                    current_search = tree_six
+
                 elif bool(tree_six) == False:
                     turn_c = turn_f
                     current_search = tree_six
@@ -254,13 +260,13 @@ class ReversiEngine(object):
             res_sev = []
             for row_sev in tree_sev:
                 res_six = []
-                for row_six in tree_six:
+                for row_six in row_sev:
                     res_fiv = []
-                    for row_fiv in tree_fiv:
+                    for row_fiv in row_six:
                         res_fou = []
-                        for row_fou in tree_fou:
+                        for row_fou in row_fiv:
                             res_thr = []
-                            for row_thr in tree_thr:
+                            for row_thr in row_fou:
                                 res_two = []
                                 for row_two in row_thr:
                                     res_one = [self.c_score(brd) for brd in row_two]
@@ -278,11 +284,11 @@ class ReversiEngine(object):
             res_six = []
             for row_six in tree_six:
                 res_fiv = []
-                for row_fiv in tree_fiv:
+                for row_fiv in row_six:
                     res_fou = []
-                    for row_fou in tree_fou:
+                    for row_fou in row_fiv:
                         res_thr = []
-                        for row_thr in tree_thr:
+                        for row_thr in row_fou:
                             res_two = []
                             for row_two in row_thr:
                                 res_one = [self.c_score(brd) for brd in row_two]
@@ -298,9 +304,9 @@ class ReversiEngine(object):
             res_fiv = []
             for row_fiv in tree_fiv:
                 res_fou = []
-                for row_fou in tree_fou:
+                for row_fou in row_fiv:
                     res_thr = []
-                    for row_thr in tree_thr:
+                    for row_thr in row_fou:
                         res_two = []
                         for row_two in row_thr:
                             res_one = [self.c_score(brd) for brd in row_two]
@@ -314,7 +320,7 @@ class ReversiEngine(object):
             res_fou = []
             for row_fou in tree_fou:
                 res_thr = []
-                for row_thr in tree_thr:
+                for row_thr in row_fou:
                     res_two = []
                     for row_two in row_thr:
                         res_one = map(self.c_score, row_two)
@@ -352,7 +358,6 @@ class ReversiEngine(object):
                 break
        
         print self.elapsed, "<-- ELAPSED"
-        print self.base_moves[final_coor]
         return self.base_moves[final_coor]
        
     def single_move(self, dont_touch_this_board, ar_move, turn):
@@ -465,15 +470,12 @@ class ReversiEngine(object):
     def c_score(self, board):
         """Counts the current score.  Input is a <array>, output is the <score> of the board.
         For every player pebble: <score> += 1; For every enemy pebble: <score> -= 1"""
-        try:
-            score = board.count(1) - board.count(2)
-            if self.turn == 2:
-                score = (-1) * score
-            return score
-        except(AttributeError):
-            print board, "<<< AttributeError!!!!!!!!"
+        score = board.count(1) - board.count(2)
+        if self.turn == 2:
+            score = (-1) * score
+        return score
 
-'''
+"""
 boary = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
          [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
          [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
@@ -484,20 +486,19 @@ boary = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
          [0, 0, 0, 0, 0, 0, 0, 0,]]  # Temporary for developing code
 
 board = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 2, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 2, 2, 1, 1, 2, 0,],  # Temporary for developing code
-         [0, 0, 2, 1, 2, 1, 0, 0,],  # Temporary for developing code
-         [0, 0, 2, 1, 1, 2, 2, 0,],  # Temporary for developing code
-         [0, 0, 1, 0, 1, 1, 2, 0,],  # Temporary for developing code
-         [0, 1, 2, 0, 2, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 2, 0, 0, 0, 0, 0,]]  # Temporary for developing code
+         [1, 2, 1, 1, 0, 0, 0, 0,],  # Temporary for developing code
+         [1, 2, 2, 1, 1, 0, 0, 0,],  # Temporary for developing code
+         [1, 2, 2, 2, 1, 1, 0, 0,],  # Temporary for developing code
+         [1, 2, 2, 1, 2, 1, 1, 0,],  # Temporary for developing code
+         [1, 2, 1, 2, 1, 2, 1, 1,],  # Temporary for developing code
+         [1, 2, 2, 2, 2, 2, 2, 1,],  # Temporary for developing code
+         [2, 2, 1, 1, 1, 1, 1, 1,]]  # Temporary for developing code
 
 
-start = time.time()  # Temporary for developing code
-boardnp = np.array(board)  # Temporary for developing code
-board = array.array("B", boardnp.flat)  # Temporary for developing code
-revers = ReversiEngine(boardnp, 1)  # Temporary for developing code
-revers.best(boardnp)  # Temporary for developing code
-elapsed = (time.time() - start)  # Temporary for developing code
-print elapsed  # Temporary for developing code
-print "<max_counter> =", revers.max_counter  # Temporary for developing code'''
+start = time.time()                          # Temporary for developing code
+boardnp = np.array(board)                    # Temporary for developing code
+revers = ReversiEngine(boardnp, 1)           # Temporary for developing code
+revers.best(boardnp)                         # Temporary for developing code
+elapsed = (time.time() - start)              # Temporary for developing code
+print elapsed                                # Temporary for developing code
+print "<max_counter> =", revers.max_counter  # Temporary for developing code"""
