@@ -71,7 +71,7 @@ class ReversiEngine(object):
         self.tree_ten = []
         self.tree_ele = []
         self.tree_twe = []
-            
+       	 
 
     def best(self, np_board):
         """Input is a <np.board>
@@ -155,7 +155,7 @@ class ReversiEngine(object):
             # Prunes out the illegal boards and uses the counting function on them.
             tree_num = [counting(out_brd) for out_brd in b_gen if (bool(out_brd) == True)]
             if bool(tree_num) == False:
-                return brd[:] # No possible moves??? Needs editing (a response) NEEDS WEIGHIING
+                return [brd[:]] # No possible moves? Needs editing (a response) NEEDS WEIGHIING
             return tree_num
         
         # Creates tree_one
@@ -165,8 +165,6 @@ class ReversiEngine(object):
             if bool(out_brd) == True:
                 t_one_app(counting(out_brd))
                 m_app(self.to_coors[coor])
-
-        print len(tree_one), "len(tree_one)"
 
         current_search = False
         try: # Allows me to break out of the loop with the exception BreakTreeSearch
@@ -353,9 +351,7 @@ class ReversiEngine(object):
                 final_coor = coor
                 break
        
-        print self.base_moves, "BASEMOVES"
         print self.elapsed, "<-- ELAPSED"
-        print self.elapsed_two
         return self.base_moves[final_coor]
        
     def single_move(self, dont_touch_this_board, ar_move, turn):
@@ -468,10 +464,13 @@ class ReversiEngine(object):
     def c_score(self, board):
         """Counts the current score.  Input is a <array>, output is the <score> of the board.
         For every player pebble: <score> += 1; For every enemy pebble: <score> -= 1"""
-        score = board.count(1) - board.count(2)
-        if self.turn == 2:
-            score = (-1) * score
-        return score
+        try:
+            score = board.count(1) - board.count(2)
+            if self.turn == 2:
+                score = (-1) * score
+            return score
+        except(AttributeError):
+            print board, "<<< AttributeError!!!!!!!!"
 
 '''
 boary = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code

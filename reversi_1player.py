@@ -129,6 +129,27 @@ def reversi_run():
     
     while True:
         
+        
+        
+        if no_more_valid_moves(board, comp_colour) and no_more_valid_moves(board, player_colour):
+            # 'Game Over' screen
+            score = get_my_score(board, player_colour)
+            print "Gameover"
+            display_game_over(score)
+            pygame.display.update()
+            while True:
+            # Process events until the user clicks on Yes or No.
+                quit_check()
+                for event in pygame.event.get(): # event handling loop
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        if YES_RECT.collidepoint( (mouse_x, mouse_y) ):
+                            pygame.display.flip()
+                            return True
+                        elif NO_RECT.collidepoint( (mouse_x, mouse_y) ):
+                            return False
+        
+        
         if turn == 'player':  
      
             if no_more_valid_moves(board, player_colour) and not no_more_valid_moves(board, comp_colour):
@@ -138,6 +159,7 @@ def reversi_run():
             else:                 
                 game_move = None
                 while game_move == None:
+                    #print "here"
                     valid_moves = get_valid_moves(board, player_colour)
                     quit_check()
                     for event in pygame.event.get(): # event handling loop
@@ -163,7 +185,7 @@ def reversi_run():
                             if about_open and ABOUT_CLOSE_RECT.collidepoint((mouse_x, mouse_y)):
                                 about_open = False
                             game_move = get_index_from_coords(mouse_x, mouse_y)  
-                            print game_move 
+                            print game_move
                                                        
                             if game_move in valid_moves:
                                 flipx, flipy = game_move
@@ -189,7 +211,7 @@ def reversi_run():
     
                 turn = 'computer'
                        
-        elif turn == 'computer':            
+        elif turn == 'computer': 
             print 'computer plays'
             draw_board(board)
             display_whose_turn(board, turn, player_colour)                 
@@ -227,21 +249,7 @@ def reversi_run():
                 pygame.display.update()
                 
          
-        if no_more_valid_moves(board, comp_colour) and no_more_valid_moves(board, player_colour):
-            # 'Game Over' screen  
-            display_game_over(score)
-            pygame.display.update()
-            while True:
-            # Process events until the user clicks on Yes or No.
-                quit_check()
-                for event in pygame.event.get(): # event handling loop
-                    if event.type == MOUSEBUTTONUP:
-                        mouse_x, mouse_y = event.pos
-                        if YES_RECT.collidepoint( (mouse_x, mouse_y) ):
-                            pygame.display.flip()
-                            return True
-                        elif NO_RECT.collidepoint( (mouse_x, mouse_y) ):
-                            return False
+        
         score = get_my_score(board, player_colour)
         #print score
         display_score(score)
@@ -303,11 +311,11 @@ def display_score(score):
    
     score1_surf = SNAP_FONT.render(score1, True, RED)
     score1_rect = score1_surf.get_rect()
-    score1_rect.center = (60, 300)
+    score1_rect.center = (XMARGIN/2, 300)
     
     score2_surf = SNAP_FONT.render(score2, True, RED)
     score2_rect = score2_surf.get_rect()
-    score2_rect.center = (WINDOW_X-60, 300)
+    score2_rect.center = (WINDOW_X-XMARGIN/2, 300)
     
     DISPLAYSURF.blit(score1_surf, score1_rect)
     DISPLAYSURF.blit(score2_surf, score2_rect)
@@ -378,12 +386,24 @@ def init_board(board):
     for x in range(BOARD_X):
         for y in range(BOARD_Y):
             board[x][y] = 0
-
+    
     # places the starting pieces    
     board[3][3] = 1
     board[3][4] = 2
     board[4][3] = 2
     board[4][4] = 1
+    
+    """
+    board[0] = [1 for x in range(8)]
+    board[1] = [1 for x in range(8)]
+    board[2] = [1 for x in range(8)]
+    board[3] = [1 for x in range(8)]
+    board[4] = [2 for x in range(8)]
+    board[5] = [2 for x in range(8)]
+    board[6] = [2 for x in range(8)]
+    board[7] = [2 for x in range(8)]
+    board[7][7] = 0
+    """
     
     return board
 
