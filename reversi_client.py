@@ -559,13 +559,9 @@ class Client(ConnectionListener):
                             sys.exit(0)
                         elif self.play_again_rect.collidepoint((cx, cy)):
                             connection.Send({'action': 'reset', 'message': "Let's play again!"})
-                
-                            
                         
                     #take care of other menu item clicks here
 
-            
-                        
             if self.start:
                 
                 if not connection.isConnected:

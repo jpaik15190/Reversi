@@ -103,6 +103,7 @@ def reversi_run():
     player_colour, comp_colour = choose_colour() 
     pygame.display.flip()     
     draw_board(board)
+    about_open = False
      
     
     print 'colour chosen = ', player_colour
@@ -141,8 +142,9 @@ def reversi_run():
                                 #pygame.display.flip()
                                 #display_rules()
                                 #break
-                                ABOUT = True
+                                about_open = True
                                 print 'This is a game of Reversi.  Good luck!'
+                                
                             elif NEWGAME_RECT.collidepoint((mouse_x, mouse_y)):   
                                 print 'new game'
                                 return True                         
@@ -153,8 +155,8 @@ def reversi_run():
                                 pygame.quit()
                                 sys.exit()
                                 return False
-                            if ABOUT and ABOUT_CLOSE_RECT.collidepoint((mouse_x, mouse_y)):
-                                ABOUT = False
+                            if about_open and ABOUT_CLOSE_RECT.collidepoint((mouse_x, mouse_y)):
+                                about_open = False
                             game_move = get_index_from_coords(mouse_x, mouse_y)  
                             print game_move 
                                                        
@@ -177,7 +179,10 @@ def reversi_run():
                                     game_move = None                                                                
                         
                         draw_board(board)
-                        display_about()
+                        display_about(about_open)
+                        score = get_my_score(board, player_colour)
+                        #print score
+                        display_score(score)
                         pygame.display.update()                      
     
                 turn = 'computer'
@@ -197,8 +202,7 @@ def reversi_run():
                 selected_ai_move = player_engine.best(np_board) # Receives the output of the engine
                 flipx, flipy = selected_ai_move 
                 # flipx and flipy are the two coordinates selected by the engine
-    
-                # I guessed for the rest of this code, but it seems like it's acting wrong
+                
                 to_flip = get_flipped_discs(board, comp_colour, flipx, flipy)
                 for x,y in to_flip:
                     board[x][y] = comp_colour
@@ -206,7 +210,11 @@ def reversi_run():
                 
                 #print board
                 draw_board(board)
+                score = get_my_score(board, player_colour)
+                        #print score
+                display_score(score)
                 turn = 'player'
+                pygame.display.update()
          
         if no_more_valid_moves(board, comp_colour) and no_more_valid_moves(board, player_colour):
             # 'Game Over' screen  
@@ -223,10 +231,6 @@ def reversi_run():
                             return True
                         elif NO_RECT.collidepoint( (mouse_x, mouse_y) ):
                             return False
-                
-        score = get_my_score(board, player_colour)
-        #print score
-        display_score(score)
 
 def display_game_over(score):
     
@@ -287,12 +291,10 @@ def display_score(score):
     DISPLAYSURF.blit(score1_surf, score1_rect)
     DISPLAYSURF.blit(score2_surf, score2_rect)
 
-def display_about():
-    if ABOUT:
-        print "here"
+def display_about(about_open):
+    if about_open:
         DISPLAYSURF.blit(RULES_SURF, RULES_RECT)
-        DISPLAYSURF.blit(ABOUT_CLOSE, ABOUT_CLOSE_RECT)
-           
+        DISPLAYSURF.blit(ABOUT_CLOSE, ABOUT_CLOSE_RECT)           
 
 def display_buttons(): 
     
