@@ -192,8 +192,11 @@ def reversi_run():
         elif turn == 'computer':            
             print 'computer plays'
             draw_board(board)
-            display_whose_turn(board, turn, player_colour)            
-            pygame.display.update()
+            display_whose_turn(board, turn, player_colour)                 
+            score = get_my_score(board, player_colour)
+            display_score(score) 
+            display_about(about_open)      
+            pygame.display.update()          
                 
             if no_more_valid_moves(board, comp_colour) and not no_more_valid_moves(board, player_colour):
                 print 'computer has no valid moves'
@@ -247,10 +250,8 @@ def reversi_run():
 def display_whose_turn(board, turn, player_colour):
     if turn == 'player' and get_valid_moves(board, player_colour):
         DISPLAYSURF.blit(YOUR_TURN, YOUR_TURN_RECT)
-        print "your turn"
     else:
         DISPLAYSURF.blit(OPP_TURN, OPP_TURN_RECT)
-        print "their turn"
                
 def display_game_over(score):
     
