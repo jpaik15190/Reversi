@@ -352,6 +352,7 @@ class ReversiEngine(object):
                 break
        
         print self.elapsed, "<-- ELAPSED"
+        print self.base_moves[final_coor]
         return self.base_moves[final_coor]
        
     def single_move(self, dont_touch_this_board, ar_move, turn):

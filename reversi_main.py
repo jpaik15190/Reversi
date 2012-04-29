@@ -1,7 +1,7 @@
 import sys
 import reversi_server
 import reversi_client
-import reversi_1player
+import reversi_single
 import time
 from multiprocessing import Process
 import pygame
@@ -76,7 +76,7 @@ def main():
 
 
 def one_player():
-    reversi_1player.main()
+    reversi_single.new_game()
 
 def two_player_host(address, port):
     server1 = Process(target=reversi_server.new_server, args=(address, port))
