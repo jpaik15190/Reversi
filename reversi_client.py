@@ -4,8 +4,15 @@ import socket
 
 from PodSixNet.Connection import connection, ConnectionListener
 
+FPS = 10 # frames per second to update the screen
+WINDOW_X = 480 + 300 # window width
+WINDOW_Y = 480 + 120 # window height
+SQUARE_SIZE = 60 # size of each square in grid
+BOARD_X = 8 # number of columns in grid
+BOARD_Y = BOARD_X # number of rows in grid
 
-
+XMARGIN = int((WINDOW_X-(BOARD_X*SQUARE_SIZE))/2)
+YMARGIN = int((WINDOW_Y-(BOARD_Y*SQUARE_SIZE))/2)
 
 WHITE_DISC = 1
 BLACK_DISC = 2
@@ -17,16 +24,29 @@ RED = (255, 0, 0)
 NAVAJO_WHITE = (238, 207, 161)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GREEN = (0,155,0)
+YELLOW = (255, 255, 0)
+PINK = (255, 62, 150)
+ORANGE = (255, 127, 0)
+DARKRED = (139, 0, 0)
+PURPLE = (142, 56, 142)
 
 
 class Client(ConnectionListener):
+
     def __init__(self, host, port):
         
         pygame.init()
         
-        self.Connect((host, port))
+        global MAINCLOCK, DISPLAYSURF, RAVIE_FONT, WINDOW_BG, BRIT_FONT, CHOOSE_BG, SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, OVER_BG_RECT, YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT, BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_BG, ABOUT_RECT
         
-        self.screen = pygame.display.set_mode((480+300, 480+120))
+        self.Connect((host, port))
+        self.host_addr = str(host) #+ ":" + str(port)
+        
+        self.screen = pygame.display.set_mode((WINDOW_X, WINDOW_Y))
+        pygame.display.set_caption('*** REVERSI ***')
+        
+        
         #self.screen = screen
         
         self.num = None
@@ -38,6 +58,51 @@ class Client(ConnectionListener):
         self.start = False
         
         self.gameover = False
+        
+        self.font = pygame.font.SysFont('tahoma', 20, False)
+        self.font2 = pygame.font.SysFont('tahoma', 40, False)
+        self.font3 = pygame.font.SysFont('tahoma', 30, False)
+        
+        BRIT_FONT = pygame.font.Font('BRITANIC.ttf', 28)
+        RAVIE_FONT = pygame.font.Font('RAVIE.ttf', 35)
+        SNAP_FONT = pygame.font.Font('SNAP.ttf', 50)
+        BRIT_FONT_BIG = pygame.font.Font('BRITANIC.ttf', 85)
+        
+        YOUR_TURN = self.font.render("Your turn", True, WHITE)
+        YOUR_TURN_RECT = YOUR_TURN.get_rect()
+        YOUR_TURN_RECT.center= (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
+        
+        OPP_TURN = self.font.render("Opponent's turn", True, WHITE)
+        OPP_TURN_RECT = OPP_TURN.get_rect()
+        OPP_TURN_RECT.center= (WINDOW_X/2, WINDOW_Y - YMARGIN/2)
+		
+        
+        START_BG = pygame.image.load('sky2.jpg')
+        START_BG = pygame.transform.smoothscale(START_BG, (WINDOW_X, WINDOW_Y))
+        START_BG_RECT = START_BG.get_rect()
+        
+        #background image for game board
+        board_bg = pygame.image.load('sky.jpg')
+        board_bg = pygame.transform.smoothscale(board_bg, (BOARD_X*SQUARE_SIZE, BOARD_Y*SQUARE_SIZE))
+        board_bg_rect = board_bg.get_rect()
+        board_bg_rect.topleft = (XMARGIN, YMARGIN)
+        
+        WINDOW_BG = pygame.image.load('aurora2.jpg')
+        WINDOW_BG = pygame.transform.smoothscale(WINDOW_BG, (WINDOW_X, WINDOW_Y))
+        WINDOW_BG.blit(board_bg, board_bg_rect)
+        
+        OVER_BG = pygame.image.load('sunset_faded.jpg')
+        OVER_BG = pygame.transform.smoothscale(OVER_BG, (WINDOW_X, WINDOW_Y))
+        OVER_BG_RECT = OVER_BG.get_rect()
+        
+        SAD = pygame.image.load('sad_lost_small.jpg')
+        #SAD = pygame.transform.smoothscale(SAD, (WINDOW_X, WINDOW_Y))
+        SAD_RECT = SAD.get_rect()
+        SAD_RECT.center=(int(WINDOW_X/2), 250)
+        
+        TROPHY = pygame.image.load('winner_small.jpg')
+        TROPHY_RECT = TROPHY.get_rect()
+        TROPHY_RECT.center=(int(WINDOW_X/2), 250)
         
         self.window = pygame.image.load('gameover.png')
         self.window = pygame.transform.smoothscale(self.window, (780, 600))
@@ -52,16 +117,14 @@ class Client(ConnectionListener):
         
         
         
-        self.font = pygame.font.SysFont('tahoma', 20, False)
-        self.font2 = pygame.font.SysFont('tahoma', 40, False)
-        self.font3 = pygame.font.SysFont('tahoma', 30, False)
         
-        self.play_again = self.font2.render('Play Again', True, WHITE)
+        
+        self.play_again = BRIT_FONT.render('Play Again!', True, RED)
         self.play_again_rect = self.play_again.get_rect()
-        self.play_again_rect.topleft = (210, 480)
-        self.quit_game = self.font2.render('Quit', True, WHITE)
+        self.play_again_rect.center = (int(WINDOW_X/2) - 100, 500)
+        self.quit_game = BRIT_FONT.render('Exit', True, BLUE)
         self.quit_game_rect = self.quit_game.get_rect()
-        self.quit_game_rect.topleft = (492, 480)
+        self.quit_game_rect.center = (int(WINDOW_X/2) + 100, 500)
         
         self.board = self.set_board()
 
@@ -75,18 +138,20 @@ class Client(ConnectionListener):
         board[3][4] = 2
         board[4][3] = 2
         board[4][4] = 1
-        
+       
+        """
         #testing
         #-------
-        #board[0] = [1 for x in range(8)]
-        #board[1] = [1 for x in range(8)]
-        #board[2] = [2 for x in range(8)]
-        #board[3] = [2 for x in range(8)]
-        #board[4] = [2 for x in range(8)]
-        #board[5] = [2 for x in range(8)]
-        #board[6] = [1 for x in range(8)]
-        #board[7] = [1 for x in range(8)]
-        #board[7][7] = 0
+        board[0] = [1 for x in range(8)]
+        board[1] = [1 for x in range(8)]
+        board[2] = [2 for x in range(8)]
+        board[3] = [2 for x in range(8)]
+        board[4] = [2 for x in range(8)]
+        board[5] = [2 for x in range(8)]
+        board[6] = [1 for x in range(8)]
+        board[7] = [1 for x in range(8)]
+        board[7][7] = 0
+        """
         
         return board
     
@@ -256,18 +321,132 @@ class Client(ConnectionListener):
         #    return "BLACK"
         #return None
     
+    def display_buttons(self, screen): 
+        
+        global NEWGAME_RECT, ABOUT_RECT, TITLE_RECT, PLAYER1_RECT, PLAYER2_RECT, EXIT_RECT
+     
+        # make objects for buttons
+        #newgame_surf = BRIT_FONT.render('New Game', True, WHITE)
+        #NEWGAME_RECT = newgame_surf.get_rect()
+        #NEWGAME_RECT.topright = (WINDOW_X - 8, 10)
+        
+        about_surf = BRIT_FONT.render('About', True, WHITE)
+        ABOUT_RECT = about_surf.get_rect()
+        ABOUT_RECT.topright = (WINDOW_X - 20, 30)
+        
+        title_surf = RAVIE_FONT.render('REVERSI', True, YELLOW)
+        TITLE_RECT= title_surf.get_rect()
+        TITLE_RECT.center= (WINDOW_X/2, 40)
+        
+        player1_surf = BRIT_FONT.render('You', True, ORANGE)
+        PLAYER1_RECT = player1_surf.get_rect()
+        #PLAYER1_RECT.topleft = (15, 200)
+        PLAYER1_RECT.topleft = (XMARGIN/2-BRIT_FONT.size('You')[0]/2, 200)
+        
+        player2_surf = BRIT_FONT.render('Opponent', True, ORANGE)
+        PLAYER2_RECT = player2_surf.get_rect()
+        #PLAYER2_RECT.topright = (WINDOW_X-15, 200)
+        PLAYER2_RECT.topleft = (WINDOW_X-XMARGIN/2-BRIT_FONT.size('Opponent')[0]/2, 200)
+        
+        colour1_surf = BRIT_FONT.render(PLAYER1_COLOUR, True, COLOUR1, COLOUR2)
+        colour1_rect = colour1_surf.get_rect()
+        #colour1_rect.topleft = (25, 240)
+        colour1_rect.topleft = (XMARGIN/2-BRIT_FONT.size(PLAYER1_COLOUR)[0]/2, 240)
+        
+        colour2_surf = BRIT_FONT.render(PLAYER2_COLOUR, True, COLOUR2, COLOUR1)
+        colour2_rect = colour2_surf.get_rect()
+        #colour2_rect.topright = (WINDOW_X-25, 240)
+        colour2_rect.topleft = (WINDOW_X-XMARGIN/2-BRIT_FONT.size(PLAYER2_COLOUR)[0]/2, 240)
+        
+        exit_surf = BRIT_FONT.render('EXIT', True, WHITE)
+        EXIT_RECT = exit_surf.get_rect()
+        EXIT_RECT.topright = WINDOW_X-20, WINDOW_Y-50
+    
+        # put buttons on board
+        #screen.blit(newgame_surf, NEWGAME_RECT)
+        screen.blit(about_surf, ABOUT_RECT)
+        screen.blit(title_surf, TITLE_RECT)
+        screen.blit(player1_surf, PLAYER1_RECT)
+        screen.blit(player2_surf, PLAYER2_RECT)
+        screen.blit(exit_surf, EXIT_RECT)
+        screen.blit(colour1_surf, colour1_rect)
+        screen.blit(colour2_surf, colour2_rect)
+    
+    def display_score(self, screen):
+        #white_score, black_score = self.get_score(self.board)
+        my_score, opp_score = self.get_my_score(self.board)
+        
+        my_score_surf = SNAP_FONT.render(str(my_score), True, RED)
+        my_score_rect = my_score_surf.get_rect()
+        my_score_rect.center = (XMARGIN/2, 300)
+        
+        opp_score_surf = SNAP_FONT.render(str(opp_score), True, RED)
+        opp_score_rect = opp_score_surf.get_rect()
+        opp_score_rect.center = (WINDOW_X-XMARGIN/2, 300)
+        
+        screen.blit(my_score_surf, my_score_rect)
+        screen.blit(opp_score_surf, opp_score_rect)
+        
+        #screen.blit(self.font.render("BLACK: " + str(black_score), True, BLACK), (650,20))
+        #screen.blit(self.font.render("WHITE: " + str(white_score), True, BLACK), (650,50))
+    
+    def display_whose_turn(self, screen):
+        #if self.num == 1:
+        #    screen.blit(self.font.render("WHITE", True, WHITE), (45,20))
+        #elif self.num == 2:
+        #    screen.blit(self.font.render("BLACK", True, BLACK), (45,20))    
+        
+        
+        if self.turn and self.get_valid_moves(self.board, self.num):
+            screen.blit(YOUR_TURN, YOUR_TURN_RECT)
+        else:
+            screen.blit(OPP_TURN, OPP_TURN_RECT)
+            
+    
+    def display_game_over(self, screen):
+        my_score, opp_score = self.get_my_score(self.board)
+        
+        screen.blit(OVER_BG, OVER_BG_RECT)
+        #self.screen.blit(self.font2.render('Game Over', True, BLUE), (390-self.font2.size('Game Over')[0]/2, 260))
+        
+        if my_score > opp_score:
+            #self.screen.blit(self.win, self.win_rect)
+            #self.screen.blit(self.font2.render('You Win!', True, RED), (390-self.font2.size('You Win!')[0]/2, 320))
+            screen.blit(TROPHY, TROPHY_RECT)
+        elif my_score < opp_score:
+            #self.screen.blit(self.font2.render('You Lose!', True, RED), (390-self.font2.size('You Lose!')[0]/2, 365))
+            screen.blit(SAD, SAD_RECT)
+        elif my_score == opp_score:
+            self.screen.blit(self.font2.render('Draw!', True, RED), (390-self.font2.size('Draw!')[0]/2, 365))
+        
+        text_surf = BRIT_FONT_BIG.render("GAME OVER!", True, PURPLE)
+        text_rect = text_surf.get_rect()
+        text_rect.center = (int(WINDOW_X/2), 50)
+        
+        score_surf = BRIT_FONT.render(" %s -- %s  " % (str(my_score), str(opp_score)), True, BLACK)
+        score_rect = score_surf.get_rect()
+        score_rect.center = (int(WINDOW_X/2), 400)
+        
+        text2_surf = BRIT_FONT.render('What do you want to do?', True, BLACK)
+        text2_rect = text2_surf.get_rect()
+        text2_rect.center = (int(WINDOW_X/2), 450)
+
+        screen.blit(text_surf, text_rect)
+        screen.blit(text2_surf, text2_rect)
+        screen.blit(score_surf, score_rect)
+        screen.blit(self.play_again, self.play_again_rect)
+        screen.blit(self.quit_game, self.quit_game_rect)  
+        
+        self.gameover = True
+        
     def draw_board(self, screen):
     
-    	board_rect = pygame.Rect(150, 60, 480, 480)
-    	screen.fill(DARK_OLIVE_GREEN, board_rect)
-    	if self.num == 1:
-    	    screen.blit(self.font.render("WHITE", True, WHITE), (45,20))
-        elif self.num == 2:
-    	    screen.blit(self.font.render("BLACK", True, BLACK), (45,20))    
-    	
-    	if self.turn and self.get_valid_moves(self.board, self.num):
-    	    screen.blit(self.font.render(">", True, BLUE), (20,20))
-    	    
+        #board_rect = pygame.Rect(150, 60, 480, 480)
+        #screen.fill(DARK_OLIVE_GREEN, board_rect)
+        
+        screen.blit(WINDOW_BG, WINDOW_BG.get_rect())
+        
+        
         for x in range(9):
             start_x = (x * 60) + 150
             start_y = 60
@@ -291,10 +470,21 @@ class Client(ConnectionListener):
                         disc_color = BLACK
                     pygame.draw.circle(screen, disc_color, coords, 27)
         
-        white_score, black_score = self.get_score(self.board)
-        screen.blit(self.font.render("BLACK: " + str(black_score), True, BLACK), (650,20))
-        screen.blit(self.font.render("WHITE: " + str(white_score), True, BLACK), (650,50))
         
+        
+    def choose_colour(self):
+        global PLAYER1_COLOUR, PLAYER2_COLOUR, COLOUR1, COLOUR2
+        
+        if self.num == 1:
+            PLAYER1_COLOUR = "WHITE"
+            PLAYER2_COLOUR = "BLACK"
+            COLOUR1 = WHITE
+            COLOUR2 = BLACK
+        elif self.num == 2:
+            PLAYER1_COLOUR = "BLACK"
+            PLAYER2_COLOUR = "WHITE"
+            COLOUR1 = BLACK
+            COLOUR2 = WHITE
     
     def Loop(self):
         while True:
@@ -327,6 +517,15 @@ class Client(ConnectionListener):
                             tx, ty = tile
                             to_flip = self.get_flipped_discs(self.board, self.num, tx, ty)
                             connection.Send({'action': 'move', 'player': self.num, 'pos': tile, 'flip': to_flip})
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        cx, cy = event.pos
+                        if EXIT_RECT.collidepoint((cx, cy)):
+                            pygame.quit()
+                            connection.Close()
+                            sys.exit()
+                        elif ABOUT_RECT.collidepoint((cx, cy)):
+                            print 'This is a game of Reversi.  Good luck!'     
+                    
                 if self.gameover:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         cx, cy = event.pos
@@ -349,10 +548,14 @@ class Client(ConnectionListener):
                     connection.Close()
                     sys.exit(0)
                 
-                self.screen.fill(NAVAJO_WHITE)
+                #self.screen.fill(NAVAJO_WHITE)
                 self.draw_board(self.screen)
+                self.display_buttons(self.screen)
+                self.display_score(self.screen)
+                self.display_whose_turn(self.screen)
+                
                 if self.no_more_valid_moves():
-                    
+                    """
                     my_score, opp_score = self.get_my_score(self.board)
                     
                     self.screen.blit(self.window, self.window_rect)
@@ -373,19 +576,25 @@ class Client(ConnectionListener):
                     self.screen.blit(self.quit_game, self.quit_game_rect)  
                     
                     self.gameover = True
+                    """
+                    self.display_game_over(self.screen)
                     
-                    
-            	pygame.display.flip()
+                pygame.display.flip()
             
 
             if self.ready:
-                self.screen.fill(NAVAJO_WHITE)
-                self.screen.blit(self.font.render('Ready?', True, BLACK), (390-self.font.size('Ready')[0]/2, 300))
+                #self.screen.fill(NAVAJO_WHITE)
+                self.screen.blit(START_BG, START_BG_RECT)
+                self.screen.blit(self.font.render('Ready?', True, BLACK), (390-self.font.size('Ready?')[0]/2, 300))
+                self.choose_colour()
                 pygame.display.flip()
-                self.screen.fill(NAVAJO_WHITE)
+                #self.screen.fill(NAVAJO_WHITE)
             elif not self.start:
-                self.screen.fill(NAVAJO_WHITE)
-                self.screen.blit(self.font.render('Waiting for players...', True, BLACK), (390-self.font.size('Waiting for players...')[0]/2, 300))
+                #self.screen.fill(NAVAJO_WHITE)
+                self.screen.blit(START_BG, START_BG_RECT)
+                self.screen.blit(self.font.render('Waiting for opponent...', True, BLACK), (390-self.font.size('Waiting for opponent...')[0]/2, 280))
+                self.screen.blit(self.font.render(self.host_addr, True, WHITE), (390-self.font.size(self.host_addr)[0]/2, 320))
+                
                 pygame.display.flip()
                 
                 
@@ -397,7 +606,7 @@ class Client(ConnectionListener):
 # server = raw_input('Server IP: ')
 # control if server is empty
 #if server == '':
-#	server = 'localhost'
+#    server = 'localhost'
 
 # init the listener
 #client = Client(server, 31500)
