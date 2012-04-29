@@ -31,7 +31,7 @@ def main():
     global SNAP_FONT, START_BG, START_BG_RECT, OVER_BG, OVER_BG_RECT
     global BRIT_FONT_BIG, SAD, SAD_RECT, TROPHY, TROPHY_RECT, ABOUT_BG
     global ABOUT_RECT, ABOUT_CLOSE, ABOUT_CLOSE_RECT, RULES_RECT, RULES_SURF
-    global YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT
+    global YOUR_TURN, YOUR_TURN_RECT, OPP_TURN, OPP_TURN_RECT, TIE, TIE_RECT
     pygame.init()
     
     DISPLAYSURF = pygame.display.set_mode((WINDOW_X, WINDOW_Y))
@@ -68,7 +68,11 @@ def main():
     
     TROPHY = pygame.image.load('winner_small.jpg')
     TROPHY_RECT = TROPHY.get_rect()
-    TROPHY.blit(TROPHY, TROPHY_RECT)    
+    TROPHY.blit(TROPHY, TROPHY_RECT)  
+    
+    TIE = pygame.image.load('tie_small.jpg')  
+    TIE_RECT = TIE.get_rect()
+    TIE.blit(TIE, TIE_RECT)
     
     game_rules_txt = ""
     input_file = open("reversi_rules.txt", 'rU')
@@ -248,8 +252,6 @@ def reversi_run():
                 
                 pygame.display.update()
                 
-         
-        
         score = get_my_score(board, player_colour)
         #print score
         display_score(score)
@@ -272,10 +274,15 @@ def display_game_over(score):
         TROPHY_RECT.center=(int(WINDOW_X/2), 250)
         DISPLAYSURF.blit(TROPHY, TROPHY_RECT)
         
-    else:
+    elif (score[0] < score[1]):
         # player loses        
         SAD_RECT.center=(int(WINDOW_X/2), 250)
         DISPLAYSURF.blit(SAD, SAD_RECT)
+        
+    elif (score[0] == score[1]):
+        
+        TIE_RECT.center = (int(WINDOW_X/2), 250)
+        DISPLAYSURF.blit(TIE, TIE_RECT)
    
     text_surf = BRIT_FONT_BIG.render("GAME OVER!", True, PURPLE)
     text_rect = text_surf.get_rect()
@@ -381,7 +388,7 @@ def get_pixel(x,y):
     return XMARGIN + x*SQUARE_SIZE + int(SQUARE_SIZE/2), YMARGIN + y*SQUARE_SIZE + int(SQUARE_SIZE/2)
 
 def init_board(board):
-    ### initializes game board ###
+    """ initializes game board """
     
     for x in range(BOARD_X):
         for y in range(BOARD_Y):
@@ -402,8 +409,10 @@ def init_board(board):
     board[5] = [2 for x in range(8)]
     board[6] = [2 for x in range(8)]
     board[7] = [2 for x in range(8)]
-    board[7][7] = 0
+    #board[7][7] = 0
+    
     """
+    
     
     return board
 
