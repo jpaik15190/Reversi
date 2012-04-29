@@ -71,7 +71,7 @@ class ReversiEngine(object):
         self.tree_ten = []
         self.tree_ele = []
         self.tree_twe = []
-       	 
+            
 
     def best(self, np_board):
         """Input is a <np.board>
