@@ -1,0 +1,10 @@
+The game begins with four tiles placed in a square in the middle of the grid: 2 white and 2 black.
+Black makes the first move.
+Black must place a tile in such a position that there exists at least one straight (horizontal, vertical, or diagonal) occupied line between the new piece and another black piece, with one or more contiguous white tiles between them. 
+After placing the tile, black flips over all white pieces lying on a straight line between the new piece and any anchoring black pieces. 
+A valid move is one where at least one tile is reversed.
+Now, white makes a move using the same rules, but with the roles in reverse.
+Players keep taking alternate turns. 
+If there are no valid moves during a player’s turn, the other player takes over and plays a tile.
+The game ends when neither player can make a valid move: when the grid is filled up or when neither player can make a valid move in the remaining empty squares
+The player with the most pieces on the board at the end of the game wins. 
