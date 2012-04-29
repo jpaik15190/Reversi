@@ -63,21 +63,21 @@ class Game(object):
         self.gameover = False
         self.about = False
         
-        self.font = pygame.font.SysFont('tahoma', 20, False)
-        self.close_font = pygame.font.SysFont('tahoma', 16, True)
-        self.font2 = pygame.font.SysFont('tahoma', 40, False)
-        self.font3 = pygame.font.SysFont('tahoma', 30, False)
-        self.rules_font = pygame.font.SysFont('tahoma', 12, False)
+        self.font = pygame.font.SysFont('arial', 20, False)
+        self.close_font = pygame.font.SysFont('arial', 16, True)
+        self.font2 = pygame.font.SysFont('arial', 40, False)
+        self.font3 = pygame.font.SysFont('arial', 30, False)
+        self.rules_font = pygame.font.SysFont('arial', 12, False)
         self.rules_rect = pygame.Rect((40, 40, 400, 450))
         self.rules_rect.center = (WINDOW_X/2, WINDOW_Y/2)
         
         self.rules_surf = render_textrect(game_rules_txt, self.rules_font, self.rules_rect, BLACK, WHITE)
         self.rules_surf.set_alpha(200)
         
-        BRIT_FONT = pygame.font.Font('BRITANIC.ttf', 28)
-        RAVIE_FONT = pygame.font.Font('RAVIE.ttf', 35)
-        SNAP_FONT = pygame.font.Font('SNAP.ttf', 50)
-        BRIT_FONT_BIG = pygame.font.Font('BRITANIC.ttf', 85)
+        BRIT_FONT = pygame.font.SysFont('arial black', 26)
+        RAVIE_FONT = pygame.font.SysFont('arial black', 35)
+        SNAP_FONT = pygame.font.SysFont('arial black', 50)
+        BRIT_FONT_BIG = pygame.font.SysFont('arial black', 85)
         
         ABOUT_CLOSE = self.close_font.render("Close", True, BLACK)
         ABOUT_CLOSE_RECT = ABOUT_CLOSE.get_rect()
@@ -132,9 +132,9 @@ class Game(object):
         
         self.title_surf = RAVIE_FONT.render('REVERSI', True, RED)
         self.title_rect = self.title_surf.get_rect()
-        self.title_rect.center = (WINDOW_X/2, 40)
+        self.title_rect.center = (WINDOW_X/2, 30)
         
-        self.prompt_surf = BRIT_FONT_BIG.render('Choose your colour:', True, BLUE)
+        self.prompt_surf = SNAP_FONT.render('Choose your color:', True, BLUE)
         self.prompt_rect = self.prompt_surf.get_rect()
         self.prompt_rect.center = (round(WINDOW_X/2), round(WINDOW_Y/2)-100)
         
@@ -171,7 +171,7 @@ class Game(object):
         board[4] = [2 for x in range(8)]
         board[5] = [2 for x in range(8)]
         board[6] = [2 for x in range(8)]
-        board[7] = [1 for x in range(8)]
+        board[7] = [2 for x in range(8)]
         """
         return board
 
@@ -317,7 +317,7 @@ class Game(object):
         
         title_surf = RAVIE_FONT.render('REVERSI', True, YELLOW)
         TITLE_RECT= title_surf.get_rect()
-        TITLE_RECT.center= (WINDOW_X/2, 40)
+        TITLE_RECT.center= (WINDOW_X/2, 30)
         
         player1_surf = BRIT_FONT.render('You', True, ORANGE)
         PLAYER1_RECT = player1_surf.get_rect()

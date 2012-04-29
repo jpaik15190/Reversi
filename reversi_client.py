@@ -66,21 +66,26 @@ class Client(ConnectionListener):
         self.gameover = False
         self.about = False
         
-        self.font = pygame.font.SysFont('tahoma', 20, False)
-        self.close_font = pygame.font.SysFont('tahoma', 16, True)
-        self.font2 = pygame.font.SysFont('tahoma', 40, False)
-        self.font3 = pygame.font.SysFont('tahoma', 30, False)
-        self.rules_font = pygame.font.SysFont('tahoma', 12, False)
+        self.font = pygame.font.SysFont('arial', 20, False)
+        self.close_font = pygame.font.SysFont('arial', 16, True)
+        self.font2 = pygame.font.SysFont('arial', 40, False)
+        self.font3 = pygame.font.SysFont('arial', 30, False)
+        self.rules_font = pygame.font.SysFont('arial', 12, False)
         self.rules_rect = pygame.Rect((40, 40, 400, 450))
         self.rules_rect.center = (WINDOW_X/2, WINDOW_Y/2)
         
         self.rules_surf = render_textrect(game_rules_txt, self.rules_font, self.rules_rect, BLACK, WHITE)
         self.rules_surf.set_alpha(200)
-        
+        """
         BRIT_FONT = pygame.font.Font('BRITANIC.ttf', 28)
         RAVIE_FONT = pygame.font.Font('RAVIE.ttf', 35)
         SNAP_FONT = pygame.font.Font('SNAP.ttf', 50)
         BRIT_FONT_BIG = pygame.font.Font('BRITANIC.ttf', 85)
+        """
+        BRIT_FONT = pygame.font.SysFont('arial black', 26)
+        RAVIE_FONT = pygame.font.SysFont('arial black', 35)
+        SNAP_FONT = pygame.font.SysFont('arial black', 50)
+        BRIT_FONT_BIG = pygame.font.SysFont('arial black', 85)
         
         ABOUT_CLOSE = self.close_font.render("Close", True, BLACK)
         ABOUT_CLOSE_RECT = ABOUT_CLOSE.get_rect()
@@ -126,7 +131,7 @@ class Client(ConnectionListener):
         TIE_RECT = TIE.get_rect()
         TIE_RECT.center=(int(WINDOW_X/2), 250)
         
-        
+        """
         self.window = pygame.image.load('gameover.png')
         self.window = pygame.transform.smoothscale(self.window, (780, 600))
         self.window_rect = self.window.get_rect()
@@ -136,7 +141,7 @@ class Client(ConnectionListener):
         self.win = pygame.image.load('win.png')
         self.win_rect = self.win.get_rect() #(400,323)
         self.win_rect.topleft = (190, 138)
-        
+        """
         
         
         
@@ -360,7 +365,7 @@ class Client(ConnectionListener):
         
         title_surf = RAVIE_FONT.render('REVERSI', True, YELLOW)
         TITLE_RECT= title_surf.get_rect()
-        TITLE_RECT.center= (WINDOW_X/2, 40)
+        TITLE_RECT.center= (WINDOW_X/2, 30)
         
         player1_surf = BRIT_FONT.render('You', True, ORANGE)
         PLAYER1_RECT = player1_surf.get_rect()
