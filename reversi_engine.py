@@ -1,4 +1,12 @@
-"""CIS192 Final Project; reversi_engine.py; Paul Terwilliger, Jay Paik, Kirsten Lau"""
+"""The engine to determine computer's best move."""
+
+# CIS-192: Python Programming
+# Spring 2012
+# Final Project: Reversi
+# Kristen Lau, Jay Paik, Paul Terwilliger
+#
+# Required modules: pygame, numpy
+# Included module: textrect
 
 import time
 import array
@@ -9,19 +17,17 @@ class BreakTreeSearch(Exception):
     pass
 
 class ReversiEngine(object):
-    """Takes a given board and finds the best move by systematically trying every legal move.  
+    """Takes a given board and finds the best move through brute force
+    by systematically trying every legal move.  
     Input is <board>, <current_turn>, and output is <move_chosen>"""
     
-    def __init__(self, np_board, turn):
-        self.turn = turn
-        self.turn_f = ((self.turn % 2) + 1)
+    def __init__(self, np_board, player):
+        self.player = player
+        self.player_f = ((self.player % 2) + 1)
         self.board = array.array("B", (np_board.flat))
         self.base_moves = []
         self.max_counter = 0
 
-        self.elapsed = 0     # Temporary for developing code
-        self.elapsed_two = 0 # Temporary for developing code
-        
         self.to_array = { # For converting <tuple_coors> to <array_coors>
             (0, 0):  0, (0, 1):  1, (0, 2):  2, (0, 3):  3, (0, 4):  4, 
                                     (0, 5):  5, (0, 6):  6, (0, 7):  7,
@@ -58,6 +64,9 @@ class ReversiEngine(object):
             56: (7, 0), 57: (7, 1), 58: (7, 2), 59: (7, 3), 60: (7, 4),
                                     61: (7, 5), 62: (7, 6), 63: (7, 7)} 
 
+        self.corners = [0, 7, 56, 63]
+        self.x_squares = [9, 14, 49, 54]
+
         # Sets of moves in a tree
         self.tree_one = []
         self.tree_two = []
@@ -68,14 +77,10 @@ class ReversiEngine(object):
         self.tree_sev = []
         self.tree_eig = []
         self.tree_nin = []
-        self.tree_ten = []
-        self.tree_ele = []
-        self.tree_twe = []
-       	 
 
     def best(self, np_board):
         """Input is a <np.board>
-        Creates a tree of output boards and stops calculating after a time
+        Create a tree of output boards and stops calculating after a time
        
         board    = %
 
@@ -102,11 +107,11 @@ class ReversiEngine(object):
 
         self.base_moves = []
         board = array.array("B", (np_board.flat))
-        single_move = self.single_move
+        single = self.single
         m_app = self.base_moves.append
-        turn = self.turn
-        turn_f = self.turn_f
-        turn_c = turn
+        turn = self.player
+        turn_f = self.player_f
+        curr = turn # curr stands for turn-current
         
         # Designating variables for the trees
         tree_one = self.tree_one = []
@@ -118,256 +123,218 @@ class ReversiEngine(object):
         tree_sev = self.tree_sev = []
         tree_eig = self.tree_eig = []
         tree_nin = self.tree_nin = []
-        tree_ten = self.tree_ten = []
-        tree_ele = self.tree_ele = []
-        tree_twe = self.tree_twe = []
 
         t_one_app = tree_one.append
-        t_two_app = tree_two.append
-        t_thr_app = tree_thr.append
-        t_fou_app = tree_fou.append
-        t_fiv_app = tree_fiv.append
-        t_six_app = tree_six.append
-        t_sev_app = tree_sev.append
-        t_eig_app = tree_eig.append
-        t_nin_app = tree_nin.append
-        t_ten_app = tree_ten.append
-        t_ele_app = tree_ele.append
-        t_twe_app = tree_twe.append
 
         start = time.time()
-        def counting(coor):
-            """Used for calling BreakTreeSearch"""
+        def stop(coor):
+            """Use for calling BreakTreeSearch after 2.5 seconds"""
             elapsed = (time.time() - start)
-            if elapsed > 2:
+            if elapsed > 2.5:
                 raise BreakTreeSearch
             self.max_counter += 1
             return coor
 
 
-        def first_app(brd):
-            """Input is an <array>; Output is all possible <output_boards> OR the original
-            board in the case of no legal moves (passing)"""
+        def first(brd):
+            """Input is an array version of the board.
+            Output is a list of all possible <output_boards> OR
+            the original board in the case of no legal moves (passing)"""
 
-            # Creates a list of output boards for every move, both legal and illegal
-            b_gen = [single_move(brd, coor, turn_c) for coor in xrange(64) if brd[coor] == 0]
+            # Creates a list of legal and illegal output boards for every move
+            gen = [single(brd, coor, curr) for coor in xrange(64) if (brd[
+                                                                coor] == 0)]
 
-            # Prunes out the illegal boards and uses the counting function on them.
-            tree_num = [counting(out_brd) for out_brd in b_gen if (bool(out_brd) == True)]
+            # Prunes out the illegal boards & uses the stop function on them.
+            tree_num = [stop(out) for out in gen if (bool(out) == True)]
+
             if bool(tree_num) == False:
-                return [brd[:]] # No possible moves? Needs editing (a response) NEEDS WEIGHIING
+                return [brd[:]] # No possible moves
             return tree_num
         
         # Creates tree_one
-        b_gen = [coor for coor in xrange(64) if (board[coor] == 0)]
-        for coor in b_gen:
-            out_brd = single_move(board, coor, turn)
+        gen = [coor for coor in xrange(64) if (board[coor] == 0)]
+        for coor in gen:
+            out_brd = single(board, coor, turn)
             if bool(out_brd) == True:
-                t_one_app(counting(out_brd))
-                m_app(self.to_coors[coor])
+                t_one_app(stop(out_brd))
+                m_app(self.to_coors[coor]) # Remembers legal moves
         if bool(self.tree_one) == False:
-            print "MUST PASS"
-            return
+            return # Pass
+
+        def thr_lay(row_four):
+            """Take the fourth row and returns the next level deep"""
+            return [[map(first, row_two) for row_two in row_thr]
+                                         for row_thr in row_four]
+
+        def l_sev(row_seven):
+            """Take the seventh row and returns the next level deep"""
+            return [[map(thr_lay, row_fiv) for row_fiv in row_six]
+                                           for row_six in row_seven]
         
-        current_search = False
-        try: # Allows me to break out of the loop with the exception BreakTreeSearch
+        last_search = False # Remembers the tree that broke (BreakTreeSearch
+        try: # Allows breaking out of loop with exception(BreakTreeSearch)
             while True:
-                
+
                 # Creates tree_two from the boards in tree_one
                 if bool(tree_two) == False:
-                    turn_c = turn_f
-                    current_search = tree_two 
-                    print "starting <tree_two>..."
-                    tree_two = map(first_app, tree_one)
-                    current_search = tree_thr
+                    curr = turn_f
+                    last_search = tree_two 
+                    # "starting <tree_two>..."
+                    tree_two = map(first, tree_one)
+                    last_search = tree_thr
 
                 # Creates tree_thr from the boards in tree_two
                 elif bool(tree_thr) == False:
-                    turn_c = turn
-                    print "starting <tree_thr>..."
-                    tree_thr = [map(first_app, row_two) for row_two in tree_two]
-                    current_search = tree_fou
+                    curr = turn
+                    # "starting <tree_thr>..."
+                    tree_thr = [map(first, row_two) for row_two in tree_two]
+                    last_search = tree_fou
 
                 # Creates tree_fou from the boards in tree_thr
                 elif bool(tree_fou) == False:
-                    turn_c = turn_f
-                    print "starting <tree_fou>..."
-                    for row_thr in tree_thr:
-                        row_fou = [map(first_app, row_two) for row_two in row_thr]
-                        t_fou_app(row_fou)
-                    print "4: <max_counter> =", self.max_counter
-                    current_search = tree_fiv
+                    curr = turn_f
+                    # "starting <tree_fou>..."
+                    tree_fou = thr_lay(tree_thr)
+                    last_search = tree_fiv
 
                 # Creates tree_fiv from the boards in tree_fou
                 elif bool(tree_fiv) == False:
-                    turn_c = turn
-                    current_search = tree_fiv
-                    print "starting <tree_fiv>..."
-                    for row_fou in tree_fou:
-                        row_fiv = [[map(first_app, row_two) for row_two in row_thr]
-                                                            for row_thr in row_fou]
-                        t_fiv_app(row_fiv)
-                    print "5: <max_counter> =", self.max_counter
-                    current_search = tree_six
+                    curr = turn
+                    # "starting <tree_fiv>..."
+                    tree_fiv = map(thr_lay, tree_fou)
+                    last_search = tree_six
 
+                # Creates tree_six from the boards in tree_fiv
                 elif bool(tree_six) == False:
-                    turn_c = turn_f
-                    current_search = tree_six
-                    print "starting <tree_six>..."
-                    for row_fiv in tree_fiv:
-                        tmp_six = []
-                        tmp_six_app = tmp_six.append
-                        for row_fou in row_fiv:
-                            tmp_fiv = []
-                            tmp_fiv_app = tmp_fiv.append
-                            for row_thr in row_fou:
-                                tmp_fou = [[first_app(board_f) for board_f in row_two]
-                                                               for row_two in row_thr]
-                                tmp_fiv_app(tmp_fou)
-                            tmp_six_app(tmp_fiv)
-                        t_six_app(tmp_six)
-                    print "6: <max_counter> =", self.max_counter
+                    curr = turn_f
+                    # "starting <tree_six>..."
+                    tree_six = [map(thr_lay, row_fiv) for row_fiv in tree_fiv]
+                    last_search = tree_sev
+
+                # Creates tree_sev from the boards in tree_six
                 elif bool(tree_sev) == False:
-                    turn_c = turn
-                    current_search = tree_sev
-                    print "starting <tree_sev>..."
-                    for row_six in tree_six:
-                        tmp_sev = []
-                        tmp_sev_app = tmp_sev.append
-                        for row_fiv in row_six:
-                            tmp_six = []
-                            tmp_six_app = tmp_six.append
-                            for row_fou in row_fiv:
-                                tmp_fiv = []
-                                tmp_fiv_app = tmp_fiv.append
-                                for row_thr in row_fou:
-                                    tmp_fou = [map(first_app, row_two) for row_two in row_thr]
-                                    tmp_fiv_app(tmp_fou)
-                                tmp_six_app(tmp_fiv)
-                            tmp_sev_app(tmp_six)
-                        t_sev_app(tmp_sev)
-                    print "7: <max_counter> =", self.max_counter
+                    curr = turn
+                    last_search = tree_sev
+                    # "starting <tree_sev>..."
+                    tree_sev = l_sev(tree_six)
+                    last_search = tree_eig
+
+                    raise BreakTreeSearch
+                # Creates tree_eig from the boards in tree_sev
+                elif bool(tree_eig) == False:
+                    curr = turn_f
+                    # "starting <tree_eig>..."
+                    tree_eig = map(l_sev, tree_sev)
+                    last_search = tree_nin
+
+                # Creates tree_nin from the boards in tree_eig
+                elif bool(tree_nin) == False:
+                    curr = turn
+                    # "starting <tree_nin>..."
+                    tree_nin = [map(l_sev, row_eig) for row_eig in tree_eig]
+                    last_search = False
+
                 else:
-                    current_search = False
+                    last_search = False
                     break
+
+        # BreakTreeSearch was raised
         except(BreakTreeSearch):
             pass
         
         final_eval = 0
-        if (bool(tree_eig) == True) and (tree_eig != current_search):
-            pass
-        elif (bool(tree_sev) == True) and (tree_sev != current_search):
-            res_sev = []
-            for row_sev in tree_sev:
-                res_six = []
-                for row_six in row_sev:
-                    res_fiv = []
-                    for row_fiv in row_six:
-                        res_fou = []
-                        for row_fou in row_fiv:
-                            res_thr = []
-                            for row_thr in row_fou:
-                                res_two = []
-                                for row_two in row_thr:
-                                    res_one = [self.c_score(brd) for brd in row_two]
-                                    res_two.append(max(res_one))
-                                res_thr.append(min(res_two))
-                            res_fou.append(max(res_thr))
-                        res_fiv.append(min(res_fou))
-                    res_six.append(max(res_fiv))
-                res_sev.append(min(res_six))
-            print "res_sev:", res_sev
-            final_eval = res_sev
- 
 
-        elif (bool(tree_six) == True) and (tree_six != current_search):
-            res_six = []
-            for row_six in tree_six:
-                res_fiv = []
-                for row_fiv in row_six:
-                    res_fou = []
-                    for row_fou in row_fiv:
-                        res_thr = []
-                        for row_thr in row_fou:
-                            res_two = []
-                            for row_two in row_thr:
-                                res_one = [self.c_score(brd) for brd in row_two]
-                                res_two.append(min(res_one))
-                            res_thr.append(max(res_two))
-                        res_fou.append(min(res_thr))
-                    res_fiv.append(max(res_fou))
-                res_six.append(min(res_fiv))
-            print "res_six:", res_six
-            final_eval = res_six
- 
-        elif (bool(tree_fiv) == True) and (tree_fiv != current_search):
-            res_fiv = []
-            for row_fiv in tree_fiv:
-                res_fou = []
-                for row_fou in row_fiv:
-                    res_thr = []
-                    for row_thr in row_fou:
-                        res_two = []
-                        for row_two in row_thr:
-                            res_one = [self.c_score(brd) for brd in row_two]
-                            res_two.append(max(res_one))
-                        res_thr.append(min(res_two))
-                    res_fou.append(max(res_thr))
-                res_fiv.append(min(res_fou))
-            print "res_fiv:", res_fiv
-            final_eval = res_fiv
-        elif (bool(tree_fou) == True) and (tree_fou != current_search):
-            res_fou = []
-            for row_fou in tree_fou:
-                res_thr = []
-                for row_thr in row_fou:
-                    res_two = []
-                    for row_two in row_thr:
-                        res_one = map(self.c_score, row_two)
-                        res_two.append(min(res_one))
-                    res_thr.append(max(res_two))
-                res_fou.append(min(res_thr))
-            print "res_fou:", res_fou
-            final_eval = res_fou
-        elif (bool(tree_thr) == True) and (tree_thr != current_search):
-            res_thr = []
-            for row_thr in tree_thr:
-                res_two = []
-                for row_two in row_thr:
-                    res_one = map(self.c_score, row_two)
-                    res_two.append(max(res_one))
-                res_thr.append(min(res_two))
-            print "res_thr:", res_thr
-            final_eval = res_thr
-        elif (bool(tree_two) == True) and (tree_two != current_search):
-            res_two = []
-            for row_two in tree_two:
-                res_one = map(self.c_score, row_two)
-                res_two.append(min(res_one))
-            print "res_two:", res_two 
-            final_eval = res_two
-        elif (bool(tree_one) == True) and (tree_one != current_search):
-            res_one = map(self.c_score, tree_one)
-            print "res_one:", res_one
-            final_eval = res_one
+        # For counting the score of tree_one
+        if (bool(tree_nin) == True) and (tree_nin != last_search):
+            final_eval = [min([max([min([max([min([max([min([max(
+                                        map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in row_fiv])
+                                        for row_fiv in row_six])
+                                        for row_six in row_sev])
+                                        for row_sev in row_eig])
+                                        for row_eig in row_nin])
+                                        for row_nin in tree_nin]
+
+        # For counting the score of tree_one
+        if (bool(tree_eig) == True) and (tree_eig != last_search):
+            final_eval = [min([max([min([max([min([max([min(
+                                        map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in row_fiv])
+                                        for row_fiv in row_six])
+                                        for row_six in row_sev])
+                                        for row_sev in row_eig])
+                                        for row_eig in tree_eig]
+
+        # For counting the score of tree_one
+        elif (bool(tree_sev) == True) and (tree_sev != last_search):
+            final_eval = [min([max([min([max([min([max(
+                                        map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in row_fiv])
+                                        for row_fiv in row_six])
+                                        for row_six in row_sev])
+                                        for row_sev in tree_sev]
+
+        # For counting the score of tree_one
+        elif (bool(tree_six) == True) and (tree_six != last_search):
+            final_eval = [min([max([min([max([min(map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in row_fiv])
+                                        for row_fiv in row_six])
+                                        for row_six in tree_six]
+
+        # For counting the score of tree_one
+        elif (bool(tree_fiv) == True) and (tree_fiv != last_search):
+            final_eval = [min([max([min([max(map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in row_fiv])
+                                        for row_fiv in tree_fiv]
+
+        # For counting the score of tree_one
+        elif (bool(tree_fou) == True) and (tree_fou != last_search):
+            final_eval = [min([max([min(map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in row_fou])
+                                        for row_fou in tree_fou]
+
+        # For counting the score of tree_one
+        elif (bool(tree_thr) == True) and (tree_thr != last_search):
+            final_eval = [min([max(map(self.c_score, row_two))
+                                        for row_two in row_thr])
+                                        for row_thr in tree_thr]
+
+        # For counting the score of tree_one
+        elif (bool(tree_two) == True) and (tree_two != last_search):
+            final_eval = [min(map(self.c_score, row_two))
+                                        for row_two in tree_two]
+
+        # For counting the score of tree_one
+        elif (bool(tree_one) == True) and (tree_one != last_search):
+            final_eval = map(self.c_score, tree_one)
         
         final_coor = 0
         for (coor, val) in enumerate(final_eval):
             if val == max(final_eval):
                 final_coor = coor
                 break
-       
-        print self.elapsed, "<-- ELAPSED"
+
         return self.base_moves[final_coor]
        
-    def single_move(self, dont_touch_this_board, ar_move, turn):
+    def single(self, dont_touch_this_board, ar_move, turn):
         """Input is an <array>, <move_tuple>, <turn>.
         Output is either: <final_board> OR <same_board>"""
         
         def lgal(flip_list, turn):
             """Input is a list of <array_coors>, <turn>
-            Output is a list of the to-be-flipped pebbles list(<array_coors>)."""
-            #startt = time.time()
+            Output is a list of to-be-flipped pebbles list(<array_coors>)."""
             counter = 0
             sec = 0
             for num in flip_list:
@@ -377,7 +344,6 @@ class ReversiEngine(object):
                     counter = sec
                     break
                 sec += 1
-            #self.elapsed_two += time.time() - startt
             return flip_list[:counter]
 
         # Defined variables:
@@ -396,64 +362,67 @@ class ReversiEngine(object):
         west_ = []
         nwest = []
 
-        start = time.time()
-
         # Enemy north
-        if (1 < coo_y) and (board[self.to_array[((coo_y - 1), coo_x)]] == turn_f):
+        if (1 < coo_y) and (board[self.to_array[((coo_y - 1), coo_x
+                                                        )]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y - 1, -1, -1)]
             coors_x = [coo_x for num in xrange(8)]
             north = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
             
         # Enemy north-east
         if (1 < coo_y) and (coo_x < 6) and (board[
-                                self.to_array[((coo_y - 1), (coo_x + 1))]] == turn_f):
+                    self.to_array[((coo_y - 1), (coo_x + 1))]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y - 1, -1, -1)]
             coors_x = [coor for coor in xrange(coo_x + 1, 8)]
             neast = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
         # Enemy east
-        if (coo_x < 6) and (board[self.to_array[(coo_y, (coo_x + 1))]] == turn_f):
+        if (coo_x < 6) and (board[self.to_array[(coo_y, (coo_x + 1)
+                                                        )]] == turn_f):
             coors_y = [coo_y for num in xrange(8)]
             coors_x = [coor for coor in xrange(coo_x + 1, 8)]
             east_ = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
         # Enemy south-east        
         if (coo_y < 6) and (coo_x < 6) and (board[
-                                self.to_array[((coo_y + 1), (coo_x + 1))]] == turn_f):
+                    self.to_array[((coo_y + 1), (coo_x + 1))]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y + 1, 8)]
             coors_x = [coor for coor in xrange(coo_x + 1, 8)]
             seast = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
             
         # Enemy south
-        if (coo_y < 6) and (board[self.to_array[((coo_y + 1), coo_x)]] == turn_f):
+        if (coo_y < 6) and (board[self.to_array[((coo_y + 1), coo_x
+                                                        )]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y + 1, 8)]
             coors_x = [coo_x for num in xrange(8)]
             south = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
         # Enemy south-west
         if (coo_y < 6) and (1 < coo_x) and (board[
-                                self.to_array[((coo_y + 1), (coo_x - 1))]] == turn_f):
+                    self.to_array[((coo_y + 1), (coo_x - 1))]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y + 1, 8)]
             coors_x = [coor for coor in xrange(coo_x - 1, -1, -1)]
             swest = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
         #Enemy west
-        if (1 < coo_x) and (board[self.to_array[(coo_y, (coo_x - 1))]] == turn_f):
+        if (1 < coo_x) and (board[self.to_array[(coo_y, (coo_x - 1)
+                                                        )]] == turn_f):
             coors_y = [coo_y for num in xrange(8)]
             coors_x = [coor for coor in xrange(coo_x - 1, -1, -1)]
             west_ = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
         # Enemy north-west
         if (1 < coo_y) and (1 < coo_x) and (board[
-                                self.to_array[((coo_y - 1), (coo_x - 1))]] == turn_f):
+                    self.to_array[((coo_y - 1), (coo_x - 1))]] == turn_f):
             coors_y = [coor for coor in xrange(coo_y - 1, -1, -1)]
             coors_x = [coor for coor in xrange(coo_x - 1, -1, -1)]
             nwest = [self.to_array[coo] for coo in zip(coors_y, coors_x)]
         
-        flip = (lgal(north, turn) + lgal(neast, turn) + lgal(east_, turn) + lgal(seast, turn)
-              + lgal(south, turn) + lgal(swest, turn) + lgal(west_, turn) + lgal(nwest, turn))
+        flip = (lgal(north, turn) + lgal(neast, turn)
+                         + lgal(east_, turn) + lgal(seast, turn)
+                         + lgal(south, turn) + lgal(swest, turn)
+                         + lgal(west_, turn) + lgal(nwest, turn))
         
-        self.elapsed += time.time() - start
 
         # Flips over the pebbles chosen by flip
         legal = False
@@ -461,44 +430,29 @@ class ReversiEngine(object):
             if legal == False:
                 legal = True
             board[ar_flipped] = turn
-        if legal == True: # Implements the chosen turn if at least one pebble is flipped
+        if legal == True: # Implements the chosen turn
             board[ar_move] = turn
             return board
         elif legal == False:
             return False # Not a legal move, don't return a board
         
     def c_score(self, board):
-        """Counts the current score.  Input is a <array>, output is the <score> of the board.
-        For every player pebble: <score> += 1; For every enemy pebble: <score> -= 1"""
+        """Count the current score.  
+        Input is a <array>, output is the <score> of the board.
+        For every player pebble: <score> += 1;
+        For every enemy pebble: <score> -= 1"""
         score = board.count(1) - board.count(2)
-        if self.turn == 2:
+        for x_square in self.x_squares:
+            if board[x_square] == 1:
+                score -= 2
+            elif board[x_square] == 2:
+                score += 2
+        for corner in self.corners:
+            if board[corner] == 1:
+                score += 8
+            elif board[corner] == 2:
+                score -= 8
+        if self.player == 2:
             score = (-1) * score
         return score
 
-"""
-boary = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 1, 2, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 2, 1, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [0, 0, 0, 0, 0, 0, 0, 0,]]  # Temporary for developing code
-
-board = [[0, 0, 0, 0, 0, 0, 0, 0,],  # Temporary for developing code
-         [1, 2, 1, 1, 0, 0, 0, 0,],  # Temporary for developing code
-         [1, 2, 2, 1, 1, 0, 0, 0,],  # Temporary for developing code
-         [1, 2, 2, 2, 1, 1, 0, 0,],  # Temporary for developing code
-         [1, 2, 2, 1, 2, 1, 1, 0,],  # Temporary for developing code
-         [1, 2, 1, 2, 1, 2, 1, 1,],  # Temporary for developing code
-         [1, 2, 2, 2, 2, 2, 2, 1,],  # Temporary for developing code
-         [2, 2, 1, 1, 1, 1, 1, 1,]]  # Temporary for developing code
-
-
-start = time.time()                          # Temporary for developing code
-boardnp = np.array(board)                    # Temporary for developing code
-revers = ReversiEngine(boardnp, 1)           # Temporary for developing code
-revers.best(boardnp)                         # Temporary for developing code
-elapsed = (time.time() - start)              # Temporary for developing code
-print elapsed                                # Temporary for developing code
-print "<max_counter> =", revers.max_counter  # Temporary for developing code"""

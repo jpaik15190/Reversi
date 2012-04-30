@@ -616,17 +616,12 @@ class Game(object):
                               str(selected_ai_move)
 
             if self.ready:
-                # Show ready screen, start the game
-                self.screen.blit(START_BG, START_BG_RECT)
-                self.screen.blit(self.font.render('Ready?', True, BLACK),
-                                 (390-self.font.size('Ready?')[0]/2, 300))
+                # Start the game
                 self.choose_colour()
                 self.player_engine = reversi_engine.ReversiEngine\
                                      (numpy.array(self.board), self.opp_num)
-                pygame.display.flip()
                 self.ready = False
                 self.start = True
-                pygame.time.delay(2000)
 
             elif not self.start:
                 # Show starting screen, choose color
